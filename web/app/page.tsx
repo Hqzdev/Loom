@@ -347,6 +347,8 @@ export default function LoomLanding() {
   const [activeView, setActiveView] = useState<InspectorView>("graph");
   const [replayState, setReplayState] = useState<ReplayState>("idle");
   const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistName, setWaitlistName] = useState("");
+  const [waitlistReason, setWaitlistReason] = useState("");
   const [waitlistState, setWaitlistState] = useState<WaitlistState>("idle");
   const [waitlistMessage, setWaitlistMessage] = useState("");
 
@@ -500,6 +502,8 @@ export default function LoomLanding() {
       setWaitlistState("done");
       setWaitlistMessage("You're on the alpha list. I'll send the DMG link when the next build is ready.");
       setWaitlistEmail("");
+      setWaitlistName("");
+      setWaitlistReason("");
       form.reset();
     } catch (error) {
       setWaitlistState("error");
@@ -768,7 +772,7 @@ export default function LoomLanding() {
                 the chain from that point forward.
               </p>
               <div className="bstat">
-                <span className="metric-chip">replay opt+cmd+R</span>
+                <span className="metric-chip">replay from any node</span>
               </div>
             </div>
             <div className="bcard p span2 reveal">
@@ -1013,8 +1017,8 @@ export default function LoomLanding() {
             in under a minute.
           </h2>
           <p>
-            Free during alpha. Build the DMG locally or join the list for the
-            next signed download. Your keys and prompts never leave your Mac.
+            Free during alpha. Join the waitlist and get the signed download
+            the moment it's ready. Your keys and prompts never leave your Mac.
           </p>
           <div className="download-actions">
             <div className="download-direct">
@@ -1022,9 +1026,6 @@ export default function LoomLanding() {
                 <LandingIcon name="apple" />
                 Download DMG
               </a>
-              <span className="download-note">
-                Served from <code>/downloads/Loom.dmg</code> after running <code>scripts/package-dmg.sh</code>.
-              </span>
             </div>
             <form
               action="/api/waitlist"
@@ -1044,8 +1045,19 @@ export default function LoomLanding() {
               <label htmlFor="waitlist-email">Get the next alpha build</label>
               <div className="waitlist-row">
                 <input
+                  autoComplete="given-name"
+                  enterKeyHint="next"
+                  id="waitlist-name"
+                  name="name"
+                  onChange={(event) => setWaitlistName(event.target.value)}
+                  placeholder="Your name"
+                  required
+                  type="text"
+                  value={waitlistName}
+                />
+                <input
                   autoComplete="email"
-                  enterKeyHint="send"
+                  enterKeyHint="next"
                   id="waitlist-email"
                   name="email"
                   onChange={(event) => setWaitlistEmail(event.target.value)}
@@ -1053,6 +1065,18 @@ export default function LoomLanding() {
                   required
                   type="email"
                   value={waitlistEmail}
+                />
+              </div>
+              <div className="waitlist-row">
+                <input
+                  enterKeyHint="send"
+                  id="waitlist-reason"
+                  name="reason"
+                  onChange={(event) => setWaitlistReason(event.target.value)}
+                  placeholder="Why are you interested in Loom?"
+                  required
+                  type="text"
+                  value={waitlistReason}
                 />
                 <button
                   className="btn btn-ghost"

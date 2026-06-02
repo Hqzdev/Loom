@@ -24,6 +24,8 @@ async function payloadFromRequest(request: NextRequest) {
     const json = await request.json();
     return {
       email: String(json.email ?? ""),
+      name: String(json.name ?? ""),
+      reason: String(json.reason ?? ""),
       source: String(json.source ?? "site"),
       company: String(json.company ?? ""),
     };
@@ -32,6 +34,8 @@ async function payloadFromRequest(request: NextRequest) {
   const formData = await request.formData();
   return {
     email: String(formData.get("email") ?? ""),
+    name: String(formData.get("name") ?? ""),
+    reason: String(formData.get("reason") ?? ""),
     source: String(formData.get("source") ?? "site"),
     company: String(formData.get("company") ?? ""),
   };
@@ -40,6 +44,8 @@ async function payloadFromRequest(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const payload = await payloadFromRequest(request);
   const email = payload.email.trim().toLowerCase();
+  const name = payload.name.trim();
+  const reason = payload.reason.trim();
   const source = payload.source.trim() || "site";
 
   if (payload.company.trim()) {
@@ -59,6 +65,8 @@ export async function POST(request: NextRequest) {
     filePath,
     JSON.stringify({
       email,
+      name,
+      reason,
       source,
       createdAt: new Date().toISOString(),
       userAgent: request.headers.get("user-agent") ?? "",
@@ -69,8 +77,14 @@ export async function POST(request: NextRequest) {
   await resend.emails.send({
     from: "onboarding@resend.dev",
     to: "wkeyqwert@gmail.com",
-    subject: `Новая заявка в вейтлист: ${email}`,
-    html: `<p><strong>Email:</strong> ${email}</p><p><strong>Source:</strong> ${source}</p><p><strong>Время:</strong> ${new Date().toISOString()}</p>`,
+    subject: `Новая заявка в вейтлист от ${name || email}`,
+    html: `
+      <p><strong>Имя:</strong> ${name || "не указано"}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Причина:</strong> ${reason || "не указана"}</p>
+      <p><strong>Source:</strong> ${source}</p>
+      <p><strong>Время:</strong> ${new Date().toISOString()}</p>
+    `,
   });
 
   return NextResponse.json({ ok: true });
