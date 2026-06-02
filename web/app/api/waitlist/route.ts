@@ -42,50 +42,57 @@ async function payloadFromRequest(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const payload = await payloadFromRequest(request);
-  const email = payload.email.trim().toLowerCase();
-  const name = payload.name.trim();
-  const reason = payload.reason.trim();
-  const source = payload.source.trim() || "site";
+  try {
+    const payload = await payloadFromRequest(request);
+    const email = payload.email.trim().toLowerCase();
+    const name = payload.name.trim();
+    const reason = payload.reason.trim();
+    const source = payload.source.trim() || "site";
 
-  if (payload.company.trim()) {
-    return NextResponse.json({ ok: true });
-  }
+    if (payload.company.trim()) {
+      return NextResponse.json({ ok: true });
+    }
 
-  if (!EMAIL_PATTERN.test(email)) {
-    return NextResponse.json(
-      { ok: false, error: "Enter a valid email address." },
-      { status: 400 },
+    if (!EMAIL_PATTERN.test(email)) {
+      return NextResponse.json(
+        { ok: false, error: "Enter a valid email address." },
+        { status: 400 },
+      );
+    }
+
+    const filePath = waitlistFilePath();
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await appendFile(
+      filePath,
+      JSON.stringify({
+        email,
+        name,
+        reason,
+        source,
+        createdAt: new Date().toISOString(),
+        userAgent: request.headers.get("user-agent") ?? "",
+      }) + "\n",
+      "utf8",
     );
+
+    resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: "wkeyqwert@gmail.com",
+      subject: `Новая заявка в вейтлист от ${name || email}`,
+      html: `
+        <p><strong>Имя:</strong> ${name || "не указано"}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Причина:</strong> ${reason || "не указана"}</p>
+        <p><strong>Source:</strong> ${source}</p>
+        <p><strong>Время:</strong> ${new Date().toISOString()}</p>
+      `,
+    }).catch((err: unknown) => {
+      console.error("Resend error:", err);
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Waitlist error:", err);
+    return NextResponse.json({ ok: false, error: "Something went wrong." }, { status: 500 });
   }
-
-  const filePath = waitlistFilePath();
-  await mkdir(path.dirname(filePath), { recursive: true });
-  await appendFile(
-    filePath,
-    JSON.stringify({
-      email,
-      name,
-      reason,
-      source,
-      createdAt: new Date().toISOString(),
-      userAgent: request.headers.get("user-agent") ?? "",
-    }) + "\n",
-    "utf8",
-  );
-
-  await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: "wkeyqwert@gmail.com",
-    subject: `Новая заявка в вейтлист от ${name || email}`,
-    html: `
-      <p><strong>Имя:</strong> ${name || "не указано"}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Причина:</strong> ${reason || "не указана"}</p>
-      <p><strong>Source:</strong> ${source}</p>
-      <p><strong>Время:</strong> ${new Date().toISOString()}</p>
-    `,
-  });
-
-  return NextResponse.json({ ok: true });
 }

@@ -104,6 +104,33 @@ const jsonLd = {
       publisher: { "@id": `${SITE_URL}/#organization` },
     },
     {
+      "@type": "HowTo",
+      "@id": `${SITE_URL}/#howto`,
+      name: "How to debug AI agents with Loom",
+      description: "Set up Loom to intercept, visualize, and replay LLM calls from any AI agent in three steps.",
+      totalTime: "PT2M",
+      step: [
+        {
+          "@type": "HowToStep",
+          position: 1,
+          name: "Point the base_url",
+          text: "Change your AI client's base_url to http://localhost:8080/v1. This is the only code change required. Works with any OpenAI-compatible SDK.",
+        },
+        {
+          "@type": "HowToStep",
+          position: 2,
+          name: "Run your agent",
+          text: "Run your agent as normal. Every LLM request is automatically intercepted, cached, and streamed into the visual tree in real time.",
+        },
+        {
+          "@type": "HowToStep",
+          position: 3,
+          name: "Inspect and replay",
+          text: "Open the canvas, click any node to inspect its full request and response, rewrite its output, and replay the chain from that point to test fixes.",
+        },
+      ],
+    },
+    {
       "@type": "FAQPage",
       mainEntity: [
         {

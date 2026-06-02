@@ -2,29 +2,73 @@
 
 > Local-first observability and debugging tool for AI agents and LLM applications on macOS.
 
-Loom is a macOS developer tool that intercepts, inspects, and replays every LLM call made by AI agents — entirely locally, with no data leaving the machine.
+Loom is a free macOS developer tool that intercepts, inspects, and replays every LLM call made by AI agents — entirely locally, with no data leaving the machine. It works by running a local HTTP proxy; developers point their AI client's `base_url` at `http://localhost:8080/v1` — that is the only code change required.
 
 ## What Loom does
 
-- Runs a local HTTP proxy; developers point their AI client's `base_url` at `http://localhost:8080/v1`
-- Captures every request and response in real time without any SDK changes
-- Visualizes complex multi-step agent trees so developers can see exactly what each agent called and why
-- Lets developers replay past requests or mock responses for offline testing
-- Stores API keys in the macOS Keychain — they never appear in plain text
+- Intercepts every LLM request and response in real time without any SDK changes or code instrumentation
+- Visualizes multi-step agent runs as an interactive node graph so developers can see exactly what each agent called, in what order, and what happened
+- Replays past requests and mocks responses for offline testing and debugging without re-running expensive API calls
+- Caches identical prompts in a local SQLite database — repeated calls return in under 1ms at $0 cost
+- Stores API keys encrypted in the macOS Keychain — they never appear in plain text or leave the machine
+- Runs entirely air-gapped — prompts, responses, traces, and keys never leave the developer's Mac
 
 ## Who it's for
 
-Developers building AI agents with OpenAI, Anthropic, Ollama, LM Studio, LangChain, LangGraph, LlamaIndex, or any OpenAI-compatible API.
+Developers building AI agents or multi-step LLM applications who need to:
+- Debug why an agent made a specific decision
+- Reduce LLM API costs during iteration by caching repeated calls
+- Test edge cases by mocking specific responses
+- Trace the full call graph of a complex agent run
+- Keep sensitive prompts and keys private during development
+
+## Supported providers and frameworks
+
+Providers: OpenAI, Anthropic (Claude), Ollama, LM Studio, and any OpenAI-compatible API.
+Frameworks: LangChain, LangGraph, LlamaIndex, and any library that accepts a configurable `base_url`.
+
+## How to use Loom (quick setup)
+
+1. Download the macOS app from https://useloom.dev/#download
+2. Change your AI client's base_url to `http://localhost:8080/v1`
+3. Run your agent as normal — every LLM call appears in the Loom canvas instantly
+
+No account required. No configuration beyond the base_url change.
 
 ## Key facts
 
 - Free during alpha; open-source core
-- Requires macOS 13+
-- Air-gapped by default — prompts, responses, and keys never leave the machine
-- No account required to use
+- Requires macOS 13 or later
+- Air-gapped by default — zero outbound connections from Loom itself
+- No account, no signup, no cloud required
+- Pricing: Free (see https://useloom.dev/pricing.md for details)
+
+## Frequently asked questions
+
+**How does Loom intercept LLM calls without SDK changes?**
+Loom runs a local HTTP proxy. You point your AI client's base_url at http://localhost:8080/v1 — that's the only change. Loom forwards requests to the real provider and records everything locally.
+
+**Does Loom send my prompts or API keys to the cloud?**
+No. Loom is fully air-gapped. Prompts, responses, and API keys never leave your Mac. API keys are encrypted in the macOS Keychain.
+
+**Which LLM providers does Loom support?**
+OpenAI, Anthropic, Ollama, LM Studio, and any provider that accepts an OpenAI-compatible base_url. It also works with LangChain, LangGraph, LlamaIndex, and similar frameworks.
+
+**What is time-travel mocking?**
+Time-travel mocking lets you click any past node in the agent trace, edit its response JSON, and replay the entire chain from that point forward — without re-running any earlier steps or making real API calls.
+
+**How does the local cache work?**
+Loom stores request/response pairs in a local SQLite database. When the same prompt is sent again, Loom returns the cached response in under 1ms at $0 cost instead of calling the provider.
+
+**Is Loom free?**
+Yes. Loom is free during the alpha period. The core proxy is open source.
+
+**How is Loom different from LangSmith or Weights & Biases?**
+LangSmith and W&B send your traces to cloud servers. Loom keeps everything on your machine. There is no cloud, no account, and no data leaves your Mac. Loom is designed for developers who need full privacy during development.
 
 ## Links
 
 - Homepage: https://useloom.dev
 - Download: https://useloom.dev/#download
 - Features: https://useloom.dev/#features
+- Pricing: https://useloom.dev/pricing.md

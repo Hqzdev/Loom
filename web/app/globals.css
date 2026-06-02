@@ -120,6 +120,7 @@ h2.title {
 .flcard:focus-visible,
 .tt-btn:focus-visible,
 .waitlist-form input:focus-visible,
+.waitlist-form select:focus-visible,
 .waitlist-form button:focus-visible {
   outline: 2px solid var(--green);
   outline-offset: 3px;
@@ -621,6 +622,25 @@ h2.title {
   padding: 0 14px;
 }
 .waitlist-row input::placeholder { color: var(--text-4); }
+.waitlist-select {
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-window);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  padding: 0 36px 0 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+  width: 100%;
+}
+.waitlist-select:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.waitlist-select option[value=""] { color: var(--text-4); }
 .waitlist-row input:user-invalid {
   border-color: var(--pink-dim);
   box-shadow: 0 0 0 1px rgba(255,138,164,.18);
@@ -662,6 +682,16 @@ h2.title {
   color: var(--text-4);
 }
 .final-meta .ic { color: var(--green); }
+
+/* ====== faq ====== */
+.faq-list { display: flex; flex-direction: column; gap: 2px; margin-top: 48px; max-width: 760px; margin-inline: auto; }
+.faq-item { border: 1px solid var(--border-soft); border-radius: 10px; background: var(--surface-1); overflow: hidden; }
+.faq-item + .faq-item { border-top: 1px solid var(--border-soft); }
+.faq-q { font-size: 15px; font-weight: 600; color: var(--text); padding: 18px 20px; cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.faq-q::-webkit-details-marker { display: none; }
+.faq-q::after { content: "+"; font-size: 20px; font-weight: 300; color: var(--text-4); flex-shrink: 0; transition: transform .2s; }
+.faq-item[open] .faq-q::after { transform: rotate(45deg); }
+.faq-a { font-size: 14px; color: var(--text-3); line-height: 1.65; padding: 0 20px 18px; margin: 0; }
 
 /* ====== footer ====== */
 .footer { border-top: 1px solid var(--border-soft); padding: 54px 0 60px; margin-top: 40px; }

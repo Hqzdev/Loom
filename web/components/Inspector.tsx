@@ -71,7 +71,7 @@ export function Inspector({
               <span className="chip">
                 temp {node.temperature == null ? "—" : node.temperature.toFixed(1)}
               </span>
-              <span className="chip">{node.tokensIn} tok</span>
+              <span className="chip">{node.tokensIn} tдok</span>
             </div>
             <div className="code">
               <table>

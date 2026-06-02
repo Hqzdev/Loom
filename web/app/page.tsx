@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { NODES, SESSION, type NodeStatus, type TraceNode } from "@/lib/data";
 
 const DOWNLOAD_HREF = "/downloads/Loom.dmg";
@@ -334,7 +335,6 @@ function InspectorGraph() {
 export default function LoomLanding() {
   const reduce = usePrefersReducedMotion();
   const treeRef = useRef<HTMLDivElement>(null);
-  const [navStuck, setNavStuck] = useState(false);
   const [visibleLines, setVisibleLines] = useState(0);
   const [activeLine, setActiveLine] = useState<number | null>(null);
   const [heroTreeCount, setHeroTreeCount] = useState(0);
@@ -353,13 +353,6 @@ export default function LoomLanding() {
   const [waitlistMessage, setWaitlistMessage] = useState("");
 
   useRevealOnScroll();
-
-  useEffect(() => {
-    const onScroll = () => setNavStuck(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     let live = true;
@@ -522,32 +515,7 @@ export default function LoomLanding() {
 
   return (
     <main className="landing-page">
-      <nav className={`nav ${navStuck ? "stuck" : ""}`} id="nav">
-        <div className="wrap nav-inner">
-          <a className="brand" href="#top">
-            <span className="logo">
-              <LandingIcon name="diagram-project" />
-            </span>
-            Loom
-          </a>
-          <div className="nav-links">
-            <a href="#features">Features</a>
-            <a href="#inspector">Inspector</a>
-            <a href="#how">How it works</a>
-            <a href="#download">Download</a>
-          </div>
-          <div className="nav-right">
-            <a className="gh-pill" href="#download" aria-label="Get the Loom alpha build">
-              <LandingIcon name="circle" />
-              Alpha build
-            </a>
-            <a className="btn btn-primary btn-sm" href="#download">
-              <LandingIcon name="apple" />
-              Download
-            </a>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <header className="hero wrap" id="top">
         <div className="center-row">
@@ -1009,6 +977,46 @@ export default function LoomLanding() {
         </div>
       </section>
 
+      <section className="section-pad wrap" id="faq">
+        <div className="section-head reveal">
+          <div className="kicker">Common questions</div>
+          <h2 className="title">Everything you need to know.</h2>
+        </div>
+        <div className="faq-list">
+          {[
+            {
+              q: "How does Loom intercept LLM calls without changing my code?",
+              a: "Loom runs a local HTTP proxy on your machine. You point your AI client's base_url at http://localhost:8080/v1 — that's the only change. Loom transparently forwards every request to the real provider and records the full request/response pair locally.",
+            },
+            {
+              q: "Does Loom send my prompts or API keys anywhere?",
+              a: "No. Loom is fully air-gapped. Your prompts, responses, and API keys never leave your Mac. API keys are stored encrypted in the macOS Keychain and are never written to disk in plain text.",
+            },
+            {
+              q: "Which LLM providers and frameworks does Loom support?",
+              a: "Loom supports OpenAI, Anthropic (Claude), Ollama, LM Studio, and any provider that accepts an OpenAI-compatible base_url. It works with LangChain, LangGraph, LlamaIndex, and any SDK with a configurable endpoint.",
+            },
+            {
+              q: "How is Loom different from LangSmith or Weights & Biases?",
+              a: "LangSmith and W&B send your traces to cloud servers. Loom keeps everything on your machine — there is no cloud, no account, and nothing leaves your Mac. It's designed for developers who can't or won't send production prompts to third-party services.",
+            },
+            {
+              q: "What is time-travel mocking?",
+              a: "Time-travel mocking lets you click any past node in the agent trace, edit its response JSON, and replay the entire chain from that point forward — without re-running earlier steps or spending tokens. You can test how your agent would behave with a different LLM output in seconds.",
+            },
+            {
+              q: "Is Loom free?",
+              a: "Yes. Loom is free during the alpha period and the core proxy is open source. No credit card or account required.",
+            },
+          ].map(({ q, a }) => (
+            <details className="faq-item reveal" key={q}>
+              <summary className="faq-q">{q}</summary>
+              <p className="faq-a">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       <section className="section-pad wrap finalcta" id="download">
         <div className="cta-card reveal">
           <h2>
@@ -1068,16 +1076,22 @@ export default function LoomLanding() {
                 />
               </div>
               <div className="waitlist-row">
-                <input
-                  enterKeyHint="send"
+                <select
                   id="waitlist-reason"
                   name="reason"
                   onChange={(event) => setWaitlistReason(event.target.value)}
-                  placeholder="Why are you interested in Loom?"
                   required
-                  type="text"
                   value={waitlistReason}
-                />
+                  className="waitlist-select"
+                >
+                  <option value="" disabled>Why are you interested in Loom?</option>
+                  <option value="Debugging AI agent behavior">Debugging AI agent behavior</option>
+                  <option value="Monitoring LLM API costs">Monitoring LLM API costs</option>
+                  <option value="Replaying and mocking responses">Replaying and mocking responses</option>
+                  <option value="Keeping data private — no cloud">Keeping data private — no cloud</option>
+                  <option value="Building AI agents professionally">Building AI agents professionally</option>
+                  <option value="Other">Other</option>
+                </select>
                 <button
                   className="btn btn-ghost"
                   disabled={waitlistState === "submitting"}
@@ -1122,48 +1136,7 @@ export default function LoomLanding() {
         </div>
       </section>
 
-      <footer className="footer wrap">
-        <div className="foot-grid">
-          <div className="foot-brand">
-            <a className="brand" href="#top">
-              <span className="logo">
-                <LandingIcon name="diagram-project" />
-              </span>
-              Loom
-            </a>
-            <p>
-              Local-first observability and mocking for LLM agents. Built for
-              developers who refuse to debug in the dark.
-            </p>
-          </div>
-          <div className="foot-col">
-            <h5>Product</h5>
-            <a href="#features">Features</a>
-            <a href="#inspector">Inspector</a>
-            <a href="#how">How it works</a>
-            <a href="#download">Download</a>
-          </div>
-          <div className="foot-col">
-            <h5>Developers</h5>
-            <a href="#">Documentation</a>
-            <a href="#">CLI reference</a>
-            <a href="#">Changelog</a>
-            <a href="#">GitHub</a>
-          </div>
-          <div className="foot-col">
-            <h5>Company</h5>
-            <a href="#">Privacy</a>
-            <a href="#">Security</a>
-            <a href="#">Contact</a>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <span>© 2026 Loom - Crafted for the Mac</span>
-          <span>
-            <LandingIcon name="circle" /> All systems local
-          </span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
