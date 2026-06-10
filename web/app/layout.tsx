@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Script from "next/script";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://useTether.dev";
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GTM_ID = "GTM-WCSRPQFF";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -230,31 +229,31 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer',${JSON.stringify(GTM_ID)});
+`,
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
       <body>
-        {GA_ID ? (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script
-              id="ga4-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', ${JSON.stringify(GA_ID)}, { send_page_view: true });
-`,
-              }}
-            />
-          </>
-        ) : null}
+        <noscript>
+          <iframe
+            height="0"
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            style={{ display: "none", visibility: "hidden" }}
+            title="Google Tag Manager"
+            width="0"
+          />
+        </noscript>
         {children}
       </body>
     </html>

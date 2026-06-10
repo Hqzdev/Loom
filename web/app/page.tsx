@@ -146,6 +146,7 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
 type InspectorView = "graph" | "cache" | "time" | "privacy";
 type ReplayState = "idle" | "running" | "done";
 type WaitlistState = "idle" | "submitting" | "done" | "error";
+type FeedbackState = "idle" | "submitting" | "done" | "error";
 
 function usePrefersReducedMotion() {
   const [reduce, setReduce] = useState(false);
@@ -265,6 +266,11 @@ export default function TetherLanding() {
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistState, setWaitlistState] = useState<WaitlistState>("idle");
   const [waitlistMessage, setWaitlistMessage] = useState("");
+  const [feedbackEmail, setFeedbackEmail] = useState("");
+  const [feedbackContext, setFeedbackContext] = useState("");
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackState, setFeedbackState] = useState<FeedbackState>("idle");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   useRevealOnScroll();
 
@@ -361,6 +367,42 @@ export default function TetherLanding() {
       setWaitlistState("error");
       trackEvent("waitlist_failed", { form_type: "alpha_waitlist", location: "final_cta" });
       setWaitlistMessage(error instanceof Error ? error.message : "Could not join the waitlist.");
+    }
+  }
+
+  async function sendFeedback(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+
+    if (!form.reportValidity()) return;
+
+    setFeedbackState("submitting");
+    setFeedbackMessage("");
+    trackEvent("feedback_submitted", { form_type: "site_feedback", location: "feedback_section" });
+
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: formData,
+      });
+      const result = (await response.json()) as { ok?: boolean; error?: string };
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Could not send feedback.");
+      }
+
+      setFeedbackState("done");
+      trackEvent("feedback_received", { form_type: "site_feedback", location: "feedback_section" });
+      setFeedbackMessage("Got it. Thanks — this goes straight into the feedback log.");
+      setFeedbackEmail("");
+      setFeedbackContext("");
+      setFeedbackText("");
+      form.reset();
+    } catch (error) {
+      setFeedbackState("error");
+      trackEvent("feedback_failed", { form_type: "site_feedback", location: "feedback_section" });
+      setFeedbackMessage(error instanceof Error ? error.message : "Could not send feedback.");
     }
   }
 
@@ -866,6 +908,89 @@ export default function TetherLanding() {
               <p className="faq-a">{a}</p>
             </details>
           ))}
+        </div>
+      </section>
+
+      <section className="section-pad wrap feedback-section" id="feedback">
+        <div className="feedback-card reveal">
+          <div className="section-head compact">
+            <div className="kicker">Feedback loop</div>
+            <h2 className="title">Tell me what breaks first.</h2>
+            <p className="section-sub">
+              Alpha users shape the next build. Send the bug, missing workflow, or reason you would not use this yet.
+            </p>
+          </div>
+          <form
+            action="/api/feedback"
+            className="feedback-form"
+            method="post"
+            onSubmit={sendFeedback}
+          >
+            <input
+              aria-hidden="true"
+              autoComplete="off"
+              className="honeypot"
+              name="company"
+              tabIndex={-1}
+              type="text"
+            />
+            <input name="source" type="hidden" value="landing-feedback" />
+            <div className="feedback-grid">
+              <label className="field">
+                <span>Email</span>
+                <input
+                  autoComplete="email"
+                  enterKeyHint="next"
+                  inputMode="email"
+                  name="email"
+                  onChange={(event) => setFeedbackEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  type="email"
+                  value={feedbackEmail}
+                />
+              </label>
+              <label className="field">
+                <span>What are you building?</span>
+                <input
+                  autoComplete="off"
+                  name="context"
+                  onChange={(event) => setFeedbackContext(event.target.value)}
+                  placeholder="support agent, internal copilot, eval harness..."
+                  type="text"
+                  value={feedbackContext}
+                />
+              </label>
+            </div>
+            <label className="field">
+              <span>Feedback</span>
+              <textarea
+                minLength={10}
+                name="feedback"
+                onChange={(event) => setFeedbackText(event.target.value)}
+                placeholder="What confused you, what would stop you from trying it, or what should be added first?"
+                required
+                rows={5}
+                value={feedbackText}
+              />
+            </label>
+            <div className="feedback-actions">
+              <button
+                className="btn btn-primary"
+                disabled={feedbackState === "submitting"}
+                type="submit"
+              >
+                <LandingIcon name={feedbackState === "done" ? "check" : "arrow-right"} />
+                {feedbackState === "submitting" ? "Sending..." : feedbackState === "done" ? "Sent" : "Send feedback"}
+              </button>
+              <p
+                aria-live="polite"
+                className={`feedback-message ${feedbackState === "error" ? "error" : ""}`.trim()}
+              >
+                {feedbackMessage || "Structured feedback beats scattered DMs."}
+              </p>
+            </div>
+          </form>
         </div>
       </section>
 
