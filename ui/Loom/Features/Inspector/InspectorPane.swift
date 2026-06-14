@@ -29,17 +29,22 @@ struct InspectorPane: View {
 
                         Spacer(minLength: 0)
 
-                        Text(node.model)
-                            .font(.system(size: 10.5, design: .monospaced))
-                            .foregroundStyle(palette.violet)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2)
-                            .background(palette.violet.opacity(0.07))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(palette.violetBorder, lineWidth: 1)
-                            )
+                        HStack(spacing: 6) {
+                            AgentBadge(name: node.agentName, palette: palette)
+
+                            Text(node.model)
+                                .font(.system(size: 10.5, design: .monospaced))
+                                .foregroundStyle(palette.violet)
+                                .lineLimit(1)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 2)
+                                .background(palette.violet.opacity(0.07))
+                                .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+                                        .stroke(palette.violetBorder, lineWidth: 1)
+                                )
+                        }
                     } else {
                         Text("Inspector")
                             .font(.headline)
@@ -49,15 +54,7 @@ struct InspectorPane: View {
                     }
                 }
 
-                Picker("Inspector section", selection: $tab) {
-                    ForEach(InspectorTab.allCases) { item in
-                        Text(item.title).tag(item)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .controlSize(.small)
-                .frame(maxWidth: .infinity)
+                InspectorTabPicker(tab: $tab, palette: palette)
             }
             .padding(.horizontal, 14)
             .padding(.top, 12)
@@ -136,6 +133,59 @@ struct InspectorPane: View {
         .onChange(of: tab) {
             editing = false
         }
+    }
+}
+
+/// Liquid-glass styled segmented control for the inspector sections.
+/// A floating glass pill slides between the Prompt / Response / Metadata tabs.
+private struct InspectorTabPicker: View {
+    @Binding var tab: InspectorTab
+    let palette: AgentTracePalette
+
+    @Namespace private var pill
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(InspectorTab.allCases) { item in
+                let selected = tab == item
+                Button {
+                    withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
+                        tab = item
+                    }
+                } label: {
+                    Text(item.title)
+                        .font(.system(size: 11.5, weight: selected ? .semibold : .medium))
+                        .foregroundStyle(selected ? palette.text : palette.textTertiary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 26)
+                        .contentShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
+                        .background {
+                            if selected {
+                                Color.clear
+                                    .liquidGlass(
+                                        palette: palette,
+                                        in: RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous),
+                                        tint: palette.glassTintStrong,
+                                        interactive: true,
+                                        strokeOpacity: 0.82
+                                    )
+                                    .matchedGeometryEffect(id: "selection", in: pill)
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background {
+            RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
+                .fill(palette.panelSecondary.opacity(0.55))
+                .overlay {
+                    RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
+                        .stroke(palette.glassStrokeSoft, lineWidth: 1)
+                }
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -246,9 +296,9 @@ private struct EditorToolbar: View {
                     .padding(.horizontal, 7)
                     .padding(.vertical, 2)
                     .background(chip == "200 OK" ? palette.greenBackground : chip == "LIVE" ? palette.amber.opacity(0.10) : palette.panel)
-                    .clipShape(Capsule())
+                    .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
                     .overlay(
-                        Capsule()
+                        RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
                             .stroke(chip == "200 OK" ? palette.greenDim : chip == "LIVE" ? palette.amber.opacity(0.36) : palette.border, lineWidth: 1)
                     )
             }
@@ -354,10 +404,10 @@ private struct CodeLineView: View {
                         .padding(.vertical, 2)
                         .background(labelAccent.opacity(0.14))
                         .overlay(
-                            Capsule()
+                            RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
                                 .stroke(labelAccent.opacity(0.32), lineWidth: 1)
                         )
-                        .clipShape(Capsule())
+                        .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
 
                     Rectangle()
                         .fill(labelAccent.opacity(0.18))
@@ -446,6 +496,7 @@ private struct MetadataTable: View {
     private var rows: [(String, String, Color?)] {
         [
             ("Request ID", node.requestId, nil),
+            ("Agent", node.agentName, nil),
             ("Status", node.error?.code ?? node.status.label, palette.color(for: node.status)),
             ("Model", node.model, nil),
             ("Exact Latency", node.latency, node.status == .cached ? palette.cyan : nil),
@@ -525,9 +576,9 @@ private struct TimeTravelButtonStyle: ButtonStyle {
                     endPoint: .trailing
                 )
             )
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
             .overlay(
-                Capsule()
+                RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
                     .stroke(active ? Color(hex: 0xe0a23f) : palette.accent.opacity(0.22), lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.86 : 1)

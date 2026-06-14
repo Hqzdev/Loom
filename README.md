@@ -23,41 +23,41 @@ The product is local-first by design. Prompts stay on the machine. API keys stay
 
 | Feature | Description |
 | --- | --- |
-| 🛡 Local Privacy Engine | Capture prompts, responses, metadata, and provider calls without shipping sensitive traces to a third-party backend. |
-| 🔐 Keychain-Aware Secrets | Keep API credentials in macOS Keychain instead of scattering tokens across scripts, shells, and notebooks. |
-| 🧭 Audit-Ready Trace History | Review what happened, when it happened, which provider was called, and how the agent moved through the flow. |
+| Local Privacy Engine | Capture prompts, responses, metadata, and provider calls without shipping sensitive traces to a third-party backend. |
+| Keychain-Aware Secrets | Keep API credentials in macOS Keychain instead of scattering tokens across scripts, shells, and notebooks. |
+| Audit-Ready Trace History | Review what happened, when it happened, which provider was called, and how the agent moved through the flow. |
 
 ### Engagement / Growth
 
 | Feature | Description |
 | --- | --- |
-| 🌱 Faster Debugging Loops | Turn unclear agent behavior into a visual story developers, founders, and product teams can discuss together. |
-| 🧩 Provider-Agnostic Workflow | Work across OpenAI, Anthropic, Ollama, LM Studio, LangChain, LangGraph, LlamaIndex, and OpenAI-compatible APIs. |
-| 📈 Product-Grade Observability | Make agent quality easier to improve by seeing latency, cache hits, failures, and response structure in context. |
+| Faster Debugging Loops | Turn unclear agent behavior into a visual story developers, founders, and product teams can discuss together. |
+| Provider-Agnostic Workflow | Work across OpenAI, Anthropic, Ollama, LM Studio, LangChain, LangGraph, LlamaIndex, and OpenAI-compatible APIs. |
+| Product-Grade Observability | Make agent quality easier to improve by seeing latency, cache hits, failures, and response structure in context. |
 
 ### Automation
 
 | Feature | Description |
 | --- | --- |
-| 🚀 Zero-SDK Proxy | Point your client at `http://localhost:8080/v1` and capture calls without rewriting your app. |
-| ⚡ Smart Response Caching | Reuse known responses during development to cut latency, cost, and repetitive provider calls. |
-| 🕰 Time-Travel Replay | Edit a previous response, replay a chain, and test downstream behavior without rerunning the entire workflow. |
+| Zero-SDK Proxy | Point your client at `http://localhost:8080/v1` and capture calls without rewriting your app. |
+| Smart Response Caching | Reuse known responses during development to cut latency, cost, and repetitive provider calls. |
+| Time-Travel Replay | Edit a previous response, replay a chain, and test downstream behavior without rerunning the entire workflow. |
 
 ### Monetization
 
 | Feature | Description |
 | --- | --- |
-| 💳 Cost Visibility | See which calls cost money, which calls came from cache, and where development spend is leaking. |
-| 📊 Latency-to-Value Signals | Understand whether a provider, model, cache layer, or tool step is slowing the experience down. |
-| 🧮 Usage-Aware Product Decisions | Connect agent behavior to cost, reliability, and product polish before scaling usage. |
+| Cost Visibility | See which calls cost money, which calls came from cache, and where development spend is leaking. |
+| Latency-to-Value Signals | Understand whether a provider, model, cache layer, or tool step is slowing the experience down. |
+| Usage-Aware Product Decisions | Connect agent behavior to cost, reliability, and product polish before scaling usage. |
 
 ### Community Infrastructure
 
 | Feature | Description |
 | --- | --- |
-| 🧱 Shared Debugging Language | Replace scattered terminal output with a clear UI your team can use to reason about agent behavior. |
-| 🧪 Local Test Workbench | Mock responses, reproduce failures, and iterate on agent flows without depending on live provider state. |
-| 🛰 Extensible Agent Surface | Designed to grow into a deeper infrastructure layer for local agent testing, replay, and observability. |
+| Shared Debugging Language | Replace scattered terminal output with a clear UI your team can use to reason about agent behavior. |
+| Local Test Workbench | Mock responses, reproduce failures, and iterate on agent flows without depending on live provider state. |
+| Extensible Agent Surface | Designed to grow into a deeper infrastructure layer for local agent testing, replay, and observability. |
 
 ---
 
@@ -180,6 +180,12 @@ For a production build:
 npm run build
 npm start
 ```
+
+---
+
+## Contributing
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before making changes. Code style, required English function comments, and documentation ownership rules live in [CODESTYLE.md](./CODESTYLE.md).
 
 ---
 

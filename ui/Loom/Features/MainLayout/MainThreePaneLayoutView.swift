@@ -15,6 +15,7 @@ struct MainThreePaneLayoutView: View {
     @State private var compactSection: CompactSection = .graph
     @State private var showingClearConfirmation = false
     @State private var showingConnectionHelp = false
+    @State private var showingSettings = false
 
     private var palette: AgentTracePalette {
         AgentTracePalette(light: true)
@@ -34,6 +35,7 @@ struct MainThreePaneLayoutView: View {
 
         return nodes.filter { node in
             node.stepName.localizedCaseInsensitiveContains(query)
+                || node.agentName.localizedCaseInsensitiveContains(query)
                 || node.model.localizedCaseInsensitiveContains(query)
                 || node.requestId.localizedCaseInsensitiveContains(query)
         }
@@ -86,6 +88,22 @@ struct MainThreePaneLayoutView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .blur(radius: showingSettings ? 3 : 0)
+                .saturation(showingSettings ? 0.78 : 1)
+                .animation(.smooth(duration: 0.16), value: showingSettings)
+
+                if showingSettings {
+                    WorkspaceSettingsOverlay(
+                        palette: palette,
+                        onDismiss: {
+                            withAnimation(.smooth(duration: 0.16)) {
+                                showingSettings = false
+                            }
+                        }
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    .zIndex(20)
+                }
             }
         }
         .ignoresSafeArea()
@@ -132,6 +150,11 @@ struct MainThreePaneLayoutView: View {
         .onReceive(NotificationCenter.default.publisher(for: .agentTraceShowOnboarding)) { _ in
             showingConnectionHelp = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .agentTraceShowSettings)) { _ in
+            withAnimation(.smooth(duration: 0.16)) {
+                showingSettings = true
+            }
+        }
         .alert("Clear All Traces?", isPresented: $showingClearConfirmation) {
             Button("Clear All Traces", role: .destructive) {
                 clearAllTraces()
@@ -150,36 +173,28 @@ struct MainThreePaneLayoutView: View {
     private func workspace(layout: AdaptiveWorkspaceLayout, size: CGSize) -> some View {
         switch layout.mode {
         case .wide:
-            HStack(spacing: 0) {
+            HSplitView {
                 sidebarPane()
-                    .frame(width: layout.sidebarWidth)
-
-                DividerLine(palette: palette)
+                    .frame(minWidth: 220, idealWidth: layout.sidebarWidth, maxWidth: 380)
 
                 graphPane()
                     .frame(minWidth: 360, maxWidth: .infinity)
 
-                DividerLine(palette: palette)
-
                 inspectorPane()
-                    .frame(width: layout.inspectorWidth)
+                    .frame(minWidth: 280, idealWidth: layout.inspectorWidth, maxWidth: 520)
             }
 
         case .medium:
-            HStack(spacing: 0) {
+            HSplitView {
                 sidebarPane()
-                    .frame(width: layout.sidebarWidth)
+                    .frame(minWidth: 220, idealWidth: layout.sidebarWidth, maxWidth: 340)
 
-                DividerLine(palette: palette)
-
-                VStack(spacing: 0) {
+                VSplitView {
                     graphPane()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                    HorizontalDividerLine(palette: palette)
+                        .frame(minHeight: 280)
 
                     inspectorPane()
-                        .frame(height: layout.inspectorHeight)
+                        .frame(minHeight: 180, idealHeight: layout.inspectorHeight, maxHeight: 360)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -214,6 +229,11 @@ struct MainThreePaneLayoutView: View {
             liveSessionId: traceStore.currentSessionId,
             onSelectSession: selectSession,
             onSelect: { selectedNodeId = $0.id },
+            onShowSettings: {
+                withAnimation(.smooth(duration: 0.16)) {
+                    showingSettings = true
+                }
+            },
             palette: palette
         )
     }
@@ -283,6 +303,7 @@ struct MainThreePaneLayoutView: View {
         case .metadata:
             return """
             id: \(node.id)
+            agent: \(node.agentName)
             model: \(node.model)
             requestId: \(node.requestId)
             status: \(node.status.label)
@@ -328,6 +349,7 @@ struct MainThreePaneLayoutView: View {
                 "session_id",
                 "session_title",
                 "node_id",
+                "agent",
                 "step",
                 "timestamp",
                 "model",
@@ -346,6 +368,7 @@ struct MainThreePaneLayoutView: View {
                 snapshot.session?.id ?? "",
                 snapshot.session?.title ?? "",
                 node.id,
+                node.agentName,
                 node.stepName,
                 node.timestamp,
                 node.model,
@@ -432,6 +455,23 @@ private struct CompactSectionPicker: View {
     }
 }
 
+private struct WorkspaceSettingsOverlay: View {
+    let palette: AgentTracePalette
+    let onDismiss: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.30)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onDismiss)
+
+            AppSettingsView(onClose: onDismiss)
+                .padding(30)
+        }
+    }
+}
+
 private struct ConnectionHelpSheet: View {
     @Environment(\.dismiss) private var dismiss
     private let palette = AgentTracePalette(light: true)
@@ -448,8 +488,11 @@ private struct ConnectionHelpSheet: View {
                         .foregroundStyle(palette.accent)
                         .frame(width: 48, height: 48)
                         .background(palette.accentBackground)
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(palette.accent.opacity(0.18), lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
+                                .stroke(palette.accent.opacity(0.18), lineWidth: 1)
+                        )
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("How to Connect an Agent")
@@ -527,7 +570,7 @@ private struct HelpPrimaryButtonStyle: ButtonStyle {
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(.white)
             .background(palette.text)
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
             .opacity(configuration.isPressed ? 0.86 : 1)
     }
 }

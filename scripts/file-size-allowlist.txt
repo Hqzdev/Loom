@@ -1,0 +1,25 @@
+# Files intentionally allowed to exceed the line limit (scripts/check-file-size.sh).
+# One repo-relative path per line. Keep this list short and justify each entry.
+#
+# During the modular-monolith migration the god files below are being split phase
+# by phase (see docs/architecture/06-migration-plan.md). Each is removed from this
+# list as its split lands. Do NOT add new entries without an accompanying reason.
+
+# Phase 2 target — Rust proxy god files (DONE)
+# proxy/src/trace.rs — DONE: split into src/trace/{capture,summarize,store,
+#   sessions,query,node,schema,routes,text}.rs
+# proxy/src/main.rs — DONE: split into src/gateway/* + thin composition root.
+# proxy/src/auth/mod.rs — DONE: split into src/auth/{context,jwt,password,
+#   routes,types,google,oauth}.rs.
+# proxy/src/settings.rs — DONE: split into src/settings/{profile,app,keys,types}.rs.
+
+# Phase 5 target — SwiftUI app god files
+ui/Loom/Features/Graph/GraphPane.swift
+ui/Loom/Features/Inspector/InspectorPane.swift
+ui/Loom/Features/MainLayout/MainThreePaneLayoutView.swift
+ui/Loom/Features/MainLayout/TraceStore.swift
+ui/Loom/Features/Settings/AppSettingsView.swift
+ui/Loom/Features/Sidebar/Sidebar.swift
+ui/Loom/Features/Welcome/WelcomeView.swift
+ui/Sources/Core/Models/TraceModels.swift
+ui/Sources/Networking/CodexLogObserver.swift

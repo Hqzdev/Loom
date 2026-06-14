@@ -4,9 +4,8 @@ use axum::{
     response::Redirect,
 };
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
 use rand_core::{OsRng, RngCore};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use sqlx::Row;
 use url::Url;
@@ -17,9 +16,10 @@ use crate::{
     error::ApiError,
 };
 
+use super::google::verify_google_id_token;
+
 const GOOGLE_AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL: &str = "https://oauth2.googleapis.com/token";
-const GOOGLE_JWKS_URL: &str = "https://www.googleapis.com/oauth2/v3/certs";
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GoogleCallbackQuery {
@@ -32,30 +32,7 @@ struct GoogleTokenResponse {
     id_token: String,
 }
 
-#[derive(Debug, Deserialize)]
-struct GoogleJwks {
-    keys: Vec<GoogleJwk>,
-}
-
-#[derive(Debug, Deserialize)]
-struct GoogleJwk {
-    kid: String,
-    n: String,
-    e: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct GoogleIdClaims {
-    sub: String,
-    email: String,
-    email_verified: Option<bool>,
-    name: Option<String>,
-    iss: String,
-    aud: String,
-    exp: usize,
-    iat: usize,
-}
-
+/// Starts a Google OAuth authorization-code flow with PKCE.
 pub(crate) async fn google_start(State(state): State<AppState>) -> Result<Redirect, ApiError> {
     let auth = require_auth(&state)?;
     let google = auth
@@ -83,6 +60,7 @@ pub(crate) async fn google_start(State(state): State<AppState>) -> Result<Redire
     Ok(Redirect::temporary(url.as_str()))
 }
 
+/// Handles the Google OAuth callback and returns an app auth token.
 pub(crate) async fn google_callback(
     State(state): State<AppState>,
     Query(query): Query<GoogleCallbackQuery>,
@@ -187,50 +165,14 @@ pub(crate) async fn google_callback(
     Ok(Json(auth_response(&auth, user)?))
 }
 
-async fn verify_google_id_token(
-    state: &AppState,
-    google_client_id: &str,
-    id_token: &str,
-) -> Result<GoogleIdClaims, ApiError> {
-    let header =
-        decode_header(id_token).map_err(|_| ApiError::bad_request("invalid Google ID token"))?;
-    let kid = header
-        .kid
-        .ok_or_else(|| ApiError::bad_request("Google ID token is missing key id"))?;
-
-    let jwks = state
-        .client
-        .get(GOOGLE_JWKS_URL)
-        .send()
-        .await
-        .map_err(|_| ApiError::unavailable("failed to fetch Google public keys"))?
-        .json::<GoogleJwks>()
-        .await
-        .map_err(|_| ApiError::unavailable("invalid Google public keys response"))?;
-
-    let jwk = jwks
-        .keys
-        .into_iter()
-        .find(|key| key.kid == kid)
-        .ok_or_else(|| ApiError::unauthorized("Google signing key not found"))?;
-    let decoding_key = DecodingKey::from_rsa_components(&jwk.n, &jwk.e)
-        .map_err(|_| ApiError::internal("invalid Google signing key"))?;
-
-    let mut validation = Validation::new(Algorithm::RS256);
-    validation.set_audience(&[google_client_id]);
-    validation.set_issuer(&["https://accounts.google.com", "accounts.google.com"]);
-
-    decode::<GoogleIdClaims>(id_token, &decoding_key, &validation)
-        .map(|data| data.claims)
-        .map_err(|_| ApiError::unauthorized("invalid Google ID token"))
-}
-
+/// Generates a URL-safe random token for OAuth state/verifier values.
 fn secure_token(bytes_len: usize) -> String {
     let mut bytes = vec![0_u8; bytes_len];
     OsRng.fill_bytes(&mut bytes);
     URL_SAFE_NO_PAD.encode(bytes)
 }
 
+/// Computes the S256 PKCE code challenge for an OAuth verifier.
 fn pkce_challenge(verifier: &str) -> String {
     let digest = Sha256::digest(verifier.as_bytes());
     URL_SAFE_NO_PAD.encode(digest)

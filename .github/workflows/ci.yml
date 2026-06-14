@@ -1,0 +1,40 @@
+name: CI
+
+# Phase 0 regression gates for the modular-monolith migration
+# (see docs/architecture/06-migration-plan.md). Every change must keep these green.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast, dependency-free guardrail: no first-party source file may exceed the
+  # line limit unless explicitly allowlisted (scripts/file-size-allowlist.txt).
+  file-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce ≤200-line files
+        run: scripts/check-file-size.sh
+
+  # End-to-end proof that agent -> proxy -> SQLite -> UI API still works.
+  # This is the behavioral safety net guarding every phase of the migration.
+  proxy-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: proxy
+      - name: Ensure sqlite3 CLI is present
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
+      - name: Run end-to-end smoke test
+        run: scripts/smoke-e2e.sh

@@ -58,6 +58,12 @@ impl IntoResponse for ApiError {
     }
 }
 
+impl From<loom_crypto::CryptoError> for ApiError {
+    fn from(error: loom_crypto::CryptoError) -> Self {
+        ApiError::internal(error.message())
+    }
+}
+
 impl From<sqlx::Error> for ApiError {
     fn from(error: sqlx::Error) -> Self {
         if let sqlx::Error::Database(db_error) = &error {

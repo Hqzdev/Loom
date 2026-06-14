@@ -137,8 +137,11 @@ private struct WelcomeFeatureCard: View {
                 .foregroundStyle(palette.accent)
                 .frame(width: 42, height: 42)
                 .background(palette.accentBackground)
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(palette.accent.opacity(0.18), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
+                        .stroke(palette.accent.opacity(0.18), lineWidth: 1)
+                )
 
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
@@ -206,7 +209,7 @@ private struct WelcomePrimaryButtonStyle: ButtonStyle {
                     endPoint: .trailing
                 )
             )
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
             .shadow(color: palette.accent.opacity(configuration.isPressed ? 0.08 : 0.18), radius: 16, y: 8)
             .opacity(configuration.isPressed ? 0.88 : 1)
     }

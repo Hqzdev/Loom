@@ -24,6 +24,71 @@ public struct StatusDot: View {
     }
 }
 
+public struct AgentBadge: View {
+    let name: String
+    let palette: AgentTracePalette
+    let compact: Bool
+
+    public init(
+        name: String,
+        palette: AgentTracePalette,
+        compact: Bool = true
+    ) {
+        self.name = name
+        self.palette = palette
+        self.compact = compact
+    }
+
+    public var body: some View {
+        HStack(spacing: compact ? 3 : 5) {
+            Image(systemName: symbolName)
+                .font(.system(size: compact ? 8.5 : 10, weight: .semibold))
+
+            Text(name)
+                .font(.system(size: compact ? 9.5 : 10.5, weight: .semibold))
+                .lineLimit(1)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, compact ? 6 : 8)
+        .padding(.vertical, compact ? 1.5 : 2.5)
+        .background(tint.opacity(0.09))
+        .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+                .stroke(tint.opacity(0.22), lineWidth: 1)
+        }
+        .help(name)
+    }
+
+    private var symbolName: String {
+        let normalized = name.lowercased()
+
+        if normalized.contains("codex") {
+            return "terminal.fill"
+        }
+
+        if normalized.contains("claude") {
+            return "cloud.fill"
+        }
+
+        return "cpu.fill"
+    }
+
+    private var tint: Color {
+        let normalized = name.lowercased()
+
+        if normalized.contains("codex") {
+            return palette.accent
+        }
+
+        if normalized.contains("claude") {
+            return palette.cyan
+        }
+
+        return palette.textTertiary
+    }
+}
+
 public struct DividerLine: View {
     let palette: AgentTracePalette
 

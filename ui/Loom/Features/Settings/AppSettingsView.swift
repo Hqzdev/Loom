@@ -4,20 +4,277 @@ import SwiftUI
 import UI
 
 struct AppSettingsView: View {
+    var onClose: (() -> Void)?
+
+    private let palette = AgentTracePalette(light: true)
+    @State private var selectedPane: SettingsPane = .general
+    @State private var searchText = ""
+
     var body: some View {
-        TabView {
-            ProxySettingsView()
-                .tabItem {
-                    Label("Proxy", systemImage: "network")
-                }
+        HStack(spacing: 0) {
+            settingsSidebar
+                .frame(width: 214)
+                .background(palette.panel.opacity(0.96))
+
+            VerticalDividerLine(palette: palette)
+
+            settingsDetail
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 480)
+        .frame(width: 920, height: 560)
+        .background(Color.white.opacity(0.96), in: RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
+                .stroke(palette.border, lineWidth: 1)
+        )
+        .shadow(color: Color(hex: 0x0f172a).opacity(0.18), radius: 34, x: 0, y: 22)
         .preferredColorScheme(.light)
+    }
+
+    private var settingsSidebar: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(palette.textTertiary)
+
+                TextField("Search", text: $searchText)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13))
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 34)
+            .background(Color.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .stroke(palette.border, lineWidth: 1)
+            )
+            .padding(.top, 14)
+            .padding(.horizontal, 14)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    SettingsPaneGroup(
+                        title: "Settings",
+                        panes: SettingsPane.settings,
+                        selectedPane: $selectedPane,
+                        palette: palette
+                    )
+
+                    SettingsPaneGroup(
+                        title: "Desktop app",
+                        panes: SettingsPane.desktop,
+                        selectedPane: $selectedPane,
+                        palette: palette
+                    )
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 16)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var settingsDetail: some View {
+        ZStack(alignment: .topTrailing) {
+            switch selectedPane {
+            case .general:
+                ProxySettingsView(
+                    title: "General desktop settings",
+                    subtitle: "Configure how Tether captures local agent traffic.",
+                    palette: palette
+                )
+
+            case .proxy:
+                ProxySettingsView(
+                    title: "Proxy settings",
+                    subtitle: "Edit upstream URLs, listen port, and local cache behavior.",
+                    palette: palette
+                )
+
+            default:
+                PlaceholderSettingsView(pane: selectedPane, palette: palette)
+            }
+
+            if let onClose {
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(palette.textSecondary)
+                .contentShape(Rectangle())
+                .padding(.top, 18)
+                .padding(.trailing, 18)
+            }
+        }
+    }
+}
+
+private enum SettingsPane: String, CaseIterable, Identifiable {
+    case general
+    case agents
+    case workspace
+    case privacy
+    case usage
+    case proxy
+    case extensions
+    case developer
+
+    var id: String { rawValue }
+
+    static let settings: [SettingsPane] = [.general, .agents, .workspace, .privacy, .usage]
+    static let desktop: [SettingsPane] = [.proxy, .extensions, .developer]
+
+    var title: String {
+        switch self {
+        case .general:
+            return "General"
+        case .agents:
+            return "Agents"
+        case .workspace:
+            return "Workspace"
+        case .privacy:
+            return "Privacy"
+        case .usage:
+            return "Usage"
+        case .proxy:
+            return "Proxy"
+        case .extensions:
+            return "Extensions"
+        case .developer:
+            return "Developer"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .general:
+            return "gearshape"
+        case .agents:
+            return "person.2"
+        case .workspace:
+            return "rectangle.3.group"
+        case .privacy:
+            return "lock.shield"
+        case .usage:
+            return "chart.bar"
+        case .proxy:
+            return "network"
+        case .extensions:
+            return "puzzlepiece.extension"
+        case .developer:
+            return "wrench.and.screwdriver"
+        }
+    }
+}
+
+private struct SettingsPaneGroup: View {
+    let title: String
+    let panes: [SettingsPane]
+    @Binding var selectedPane: SettingsPane
+    let palette: AgentTracePalette
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(palette.textTertiary)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 4)
+
+            ForEach(panes) { pane in
+                SettingsPaneButton(
+                    pane: pane,
+                    selected: selectedPane == pane,
+                    palette: palette
+                ) {
+                    selectedPane = pane
+                }
+            }
+        }
+    }
+}
+
+private struct SettingsPaneButton: View {
+    let pane: SettingsPane
+    let selected: Bool
+    let palette: AgentTracePalette
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: pane.systemImage)
+                    .font(.system(size: 13, weight: .medium))
+                    .frame(width: 18)
+                    .foregroundStyle(selected ? palette.text : palette.textTertiary)
+
+                Text(pane.title)
+                    .font(.system(size: 13, weight: selected ? .semibold : .regular))
+                    .foregroundStyle(selected ? palette.text : palette.textSecondary)
+                    .lineLimit(1)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 34)
+            .background(
+                selected ? palette.active.opacity(0.86) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct PlaceholderSettingsView: View {
+    let pane: SettingsPane
+    let palette: AgentTracePalette
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("\(pane.title) settings")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(palette.text)
+
+                    Text("This section is ready for product-specific controls.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(palette.textTertiary)
+                }
+
+                SettingsSection("Available", palette: palette) {
+                    SettingsRow("No controls yet", subtitle: "Proxy and cache settings are available in General and Proxy.", palette: palette) {
+                        EmptyView()
+                    }
+                }
+            }
+            .padding(.top, 66)
+            .padding(.horizontal, 28)
+            .padding(.bottom, 28)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+    }
+}
+
+private struct VerticalDividerLine: View {
+    let palette: AgentTracePalette
+
+    var body: some View {
+        Rectangle()
+            .fill(palette.border)
+            .frame(width: 1)
     }
 }
 
 private struct ProxySettingsView: View {
-    private let palette = AgentTracePalette(light: true)
+    let title: String
+    let subtitle: String
+    let palette: AgentTracePalette
 
     @State private var portText = String(ProxySettingsStore.current.port)
     @State private var openAIUpstreamURL = ProxySettingsStore.current.openAIUpstreamURL
@@ -32,72 +289,91 @@ private struct ProxySettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 16) {
-                SettingsSection("Listen", palette: palette) {
-                    SettingsRow("Port", palette: palette) {
-                        TextField("", text: $portText)
-                            .settingsField(palette: palette)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                    }
-                }
-
-                SettingsSection("Upstream URLs", palette: palette) {
-                    SettingsRow("OpenAI", palette: palette) {
-                        TextField("", text: $openAIUpstreamURL)
-                            .settingsField(palette: palette)
-                            .frame(maxWidth: 300)
-                    }
-
-                    SettingsRow("Anthropic", palette: palette) {
-                        TextField("", text: $anthropicUpstreamURL)
-                            .settingsField(palette: palette)
-                            .frame(maxWidth: 300)
-                    }
-                }
-
-                SettingsSection("Provider Keys", palette: palette) {
-                    SettingsRow("OpenAI", palette: palette) {
-                        SecureField(openAIKeyStored ? "•••••••• stored" : "sk-…", text: $openAIKey)
-                            .settingsField(palette: palette)
-                            .frame(maxWidth: 300)
-                    }
-
-                    SettingsRow("Anthropic", palette: palette) {
-                        SecureField(anthropicKeyStored ? "•••••••• stored" : "sk-ant-…", text: $anthropicKey)
-                            .settingsField(palette: palette)
-                            .frame(maxWidth: 300)
-                    }
-
-                    Text("Stored in the macOS Keychain. The proxy injects these on upstream calls when your client doesn't send its own key.")
-                        .font(.caption)
-                        .foregroundStyle(palette.textTertiary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                SettingsSection("Cache", palette: palette) {
-                    HStack {
-                        Text("Enable local cache")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 26) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(title)
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(palette.text)
 
-                        Spacer(minLength: 16)
-
-                        Toggle("", isOn: $localCacheEnabled)
-                            .labelsHidden()
+                        Text(subtitle)
+                            .font(.system(size: 13))
+                            .foregroundStyle(palette.textTertiary)
                     }
 
-                    Button {
-                        clearCache()
-                    } label: {
-                        Label("Clear Cache", systemImage: "trash")
-                            .frame(height: 30)
+                    SettingsSection("Listen", palette: palette) {
+                        SettingsRow("Port", subtitle: "Local port used by the desktop proxy", palette: palette) {
+                            TextField("", text: $portText)
+                                .settingsField(palette: palette)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 96)
+                        }
                     }
-                    .buttonStyle(SettingsSecondaryButtonStyle(palette: palette, destructive: true))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    SettingsSection("Upstream URLs", palette: palette) {
+                        SettingsRow("OpenAI", subtitle: "OpenAI-compatible API endpoint", palette: palette) {
+                            TextField("", text: $openAIUpstreamURL)
+                                .settingsField(palette: palette)
+                                .frame(width: 320)
+                        }
+
+                        SettingsRow("Anthropic", subtitle: "Anthropic-compatible API endpoint", palette: palette) {
+                            TextField("", text: $anthropicUpstreamURL)
+                                .settingsField(palette: palette)
+                                .frame(width: 320)
+                        }
+                    }
+
+                    SettingsSection("Provider Keys", palette: palette) {
+                        SettingsRow(
+                            "OpenAI",
+                            subtitle: openAIKeyStored ? "Stored in macOS Keychain" : "Optional fallback for OpenAI-compatible calls",
+                            palette: palette
+                        ) {
+                            SecureField(openAIKeyStored ? "stored" : "sk-...", text: $openAIKey)
+                                .settingsField(palette: palette)
+                                .frame(width: 320)
+                        }
+
+                        SettingsRow(
+                            "Anthropic",
+                            subtitle: anthropicKeyStored ? "Stored in macOS Keychain" : "Optional fallback for Anthropic-compatible calls",
+                            palette: palette
+                        ) {
+                            SecureField(anthropicKeyStored ? "stored" : "sk-ant-...", text: $anthropicKey)
+                                .settingsField(palette: palette)
+                                .frame(width: 320)
+                        }
+
+                        Text("Stored in the macOS Keychain. The proxy injects these on upstream calls when your client does not send its own key.")
+                            .font(.caption)
+                            .foregroundStyle(palette.textTertiary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 12)
+                    }
+
+                    SettingsSection("Cache", palette: palette) {
+                        SettingsRow("Enable local cache", subtitle: "Reuse compatible local responses when available", palette: palette) {
+                            Toggle("", isOn: $localCacheEnabled)
+                                .labelsHidden()
+                        }
+
+                        SettingsRow("Cached responses", subtitle: "Remove saved proxy cache files", palette: palette) {
+                            Button {
+                                clearCache()
+                            } label: {
+                                Label("Clear Cache", systemImage: "trash")
+                                    .frame(height: 30)
+                            }
+                            .buttonStyle(SettingsSecondaryButtonStyle(palette: palette, destructive: true))
+                        }
+                    }
                 }
+                .padding(.top, 66)
+                .padding(.horizontal, 28)
+                .padding(.bottom, 28)
+                .frame(maxWidth: .infinity, alignment: .top)
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .top)
 
             Spacer(minLength: 0)
 
@@ -120,11 +396,7 @@ private struct ProxySettingsView: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
-            .background(palette.panelSecondary.opacity(0.72))
-        }
-        .frame(width: 480, height: 360)
-        .background {
-            StageBackground(palette: palette)
+            .background(palette.panel.opacity(0.90))
         }
     }
 
@@ -211,18 +483,18 @@ private struct SettingsSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .font(.system(size: 13, weight: .semibold))
                 .fontWeight(.semibold)
-                .foregroundStyle(palette.textTertiary)
+                .foregroundStyle(palette.text)
 
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 content
             }
-            .padding(16)
-            .background(Color.white.opacity(0.78), in: RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous))
+            .padding(.horizontal, 16)
+            .background(Color.white.opacity(0.82), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
-                    .stroke(palette.borderSoft, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(palette.border, lineWidth: 1)
             )
         }
     }
@@ -230,24 +502,41 @@ private struct SettingsSection<Content: View>: View {
 
 private struct SettingsRow<Content: View>: View {
     private let title: String
+    private let subtitle: String?
     private let palette: AgentTracePalette
     private let content: Content
 
-    init(_ title: String, palette: AgentTracePalette, @ViewBuilder content: () -> Content) {
+    init(_ title: String, subtitle: String? = nil, palette: AgentTracePalette, @ViewBuilder content: () -> Content) {
         self.title = title
+        self.subtitle = subtitle
         self.palette = palette
         self.content = content()
     }
 
     var body: some View {
         HStack(spacing: 16) {
-            Text(title)
-                .foregroundStyle(palette.textSecondary)
-                .frame(width: 88, alignment: .leading)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 13))
+                    .foregroundStyle(palette.text)
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(palette.textTertiary)
+                        .lineLimit(2)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             content
-
-            Spacer(minLength: 0)
+        }
+        .frame(minHeight: 70)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(palette.borderSoft)
+                .frame(height: 1)
+                .padding(.leading, 0)
         }
     }
 }
@@ -262,8 +551,11 @@ private struct SettingsFieldModifier: ViewModifier {
             .foregroundStyle(palette.text)
             .padding(.horizontal, 10)
             .frame(height: 30)
-            .background(Color.white.opacity(0.88), in: Capsule())
-            .overlay(Capsule().stroke(palette.border, lineWidth: 1))
+            .background(Color.white.opacity(0.88), in: RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+                    .stroke(palette.border, lineWidth: 1)
+            )
     }
 }
 
@@ -281,7 +573,7 @@ private struct SettingsPrimaryButtonStyle: ButtonStyle {
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(.white)
             .background(palette.text)
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
             .opacity(configuration.isPressed ? 0.86 : 1)
     }
 }
@@ -295,11 +587,31 @@ private struct SettingsSecondaryButtonStyle: ButtonStyle {
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(destructive ? palette.pinkText : palette.textSecondary)
             .padding(.horizontal, 12)
-            .background(destructive ? palette.pinkBackground : palette.panelSecondary, in: Capsule())
+            .background(
+                destructive ? palette.pinkBackground : palette.panelSecondary,
+                in: RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+            )
             .overlay(
-                Capsule()
+                RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
                     .stroke(destructive ? palette.pinkDim : palette.border, lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.78 : 1)
+    }
+}
+
+private struct SettingsIconButtonStyle: ButtonStyle {
+    let palette: AgentTracePalette
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(palette.textSecondary)
+            .background(
+                configuration.isPressed ? palette.active : palette.panelSecondary,
+                in: RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+                    .stroke(palette.border, lineWidth: 1)
+            )
     }
 }

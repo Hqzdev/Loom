@@ -3,6 +3,13 @@ import SwiftUI
 
 struct AgentTraceMenuCommands: Commands {
     var body: some Commands {
+        CommandGroup(replacing: .appSettings) {
+            Button("Settings...") {
+                NotificationCenter.default.post(name: .agentTraceShowSettings, object: nil)
+            }
+            .keyboardShortcut(",", modifiers: .command)
+        }
+
         CommandGroup(replacing: .newItem) {
             Button("New Session") {
                 NotificationCenter.default.post(name: .agentTraceNewSession, object: nil)
@@ -84,4 +91,5 @@ extension Notification.Name {
     static let agentTraceShowGraph = Notification.Name("agentTraceShowGraph")
     static let agentTraceReload = Notification.Name("agentTraceReload")
     static let agentTraceShowOnboarding = Notification.Name("agentTraceShowOnboarding")
+    static let agentTraceShowSettings = Notification.Name("agentTraceShowSettings")
 }

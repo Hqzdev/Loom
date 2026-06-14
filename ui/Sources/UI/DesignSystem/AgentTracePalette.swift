@@ -15,7 +15,7 @@ public struct AgentTracePalette {
 
     public var paperRadius: CGFloat { 28 }
     public var panelRadius: CGFloat { 18 }
-    public var controlRadius: CGFloat { 999 }
+    public var controlRadius: CGFloat { panelRadius }
 
     public var window: Color { Color.white }
     public var panel: Color { Color(hex: 0xfafafa) }

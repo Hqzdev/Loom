@@ -31,7 +31,12 @@ pub(crate) struct ContextSource {
 /// Build the context-inputs descriptor for a request body. `system` and `user`
 /// are the already-extracted prompt segments (see `trace::extract_prompt`); the
 /// raw `request` JSON is used for structured fields like `tools`.
-pub(crate) fn from_request(request: Option<&Value>, system: &str, user: &str, model: &str) -> ContextInputs {
+pub(crate) fn from_request(
+    request: Option<&Value>,
+    system: &str,
+    user: &str,
+    model: &str,
+) -> ContextInputs {
     let mut sources = Vec::new();
 
     if let Some(request) = request {
@@ -77,17 +82,18 @@ fn collect_tool_definitions(request: &Value, out: &mut Vec<ContextSource>) {
             continue;
         };
         for item in items {
-            let name = item
-                .get("name")
-                .and_then(Value::as_str)
-                .or_else(|| {
-                    item.get("function")
-                        .and_then(|function| function.get("name"))
-                        .and_then(Value::as_str)
-                });
+            let name = item.get("name").and_then(Value::as_str).or_else(|| {
+                item.get("function")
+                    .and_then(|function| function.get("name"))
+                    .and_then(Value::as_str)
+            });
             let Some(name) = name else { continue };
             let serialized = serde_json::to_vec(item).unwrap_or_default();
-            let kind = if name.starts_with("mcp__") { "mcp" } else { "tool" };
+            let kind = if name.starts_with("mcp__") {
+                "mcp"
+            } else {
+                "tool"
+            };
             out.push(ContextSource {
                 kind,
                 path_or_id: name.to_string(),
@@ -102,7 +108,9 @@ fn collect_tool_definitions(request: &Value, out: &mut Vec<ContextSource>) {
 /// like Claude Code embed absolute paths when they inline file context.
 fn collect_referenced_paths(system: &str, out: &mut Vec<ContextSource>) {
     let mut seen = BTreeSet::new();
-    for raw in system.split(|c: char| c.is_whitespace() || matches!(c, '`' | '"' | '\'' | '(' | ')' | '<' | '>')) {
+    for raw in system
+        .split(|c: char| c.is_whitespace() || matches!(c, '`' | '"' | '\'' | '(' | ')' | '<' | '>'))
+    {
         let token = raw.trim_matches(|c: char| matches!(c, ',' | ';' | ':' | '.' | '!' | '?'));
         if !looks_like_path(token) || !seen.insert(token.to_string()) {
             continue;
@@ -124,7 +132,9 @@ fn collect_mcp_tools(system: &str, out: &mut Vec<ContextSource>) {
         .filter(|source| source.kind == "mcp")
         .map(|source| source.path_or_id.clone())
         .collect();
-    for raw in system.split(|c: char| c.is_whitespace() || matches!(c, '`' | '"' | '\'' | '(' | ')' | ',')) {
+    for raw in
+        system.split(|c: char| c.is_whitespace() || matches!(c, '`' | '"' | '\'' | '(' | ')' | ','))
+    {
         let token = raw.trim_matches(|c: char| matches!(c, '.' | ':' | ';'));
         if !token.starts_with("mcp__") || token.len() < 6 || !seen.insert(token.to_string()) {
             continue;

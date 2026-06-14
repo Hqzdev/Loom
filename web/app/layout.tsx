@@ -5,9 +5,12 @@ import "./globals.css";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://useTether.dev";
 const GTM_ID = "GTM-WCSRPQFF";
 const YANDEX_METRIKA_ID = 109761424;
+const APP_ICON_PATH = "/icon-1024.png";
+const APP_ICON_URL = `${SITE_URL}${APP_ICON_PATH}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: "Tether",
   title: {
     default: "Tether - Local AI Agent Trace Debugger for macOS",
     template: "%s | Tether",
@@ -36,10 +39,14 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/Tether.PNG", sizes: "1024x1024", type: "image/png" }],
-    shortcut: [{ url: "/Tether.PNG", sizes: "1024x1024", type: "image/png" }],
-    apple: [{ url: "/Tether.PNG", sizes: "1024x1024", type: "image/png" }],
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: APP_ICON_PATH, sizes: "1024x1024", type: "image/png" },
+    ],
+    shortcut: [{ url: "/favicon.png", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     type: "website",
@@ -50,7 +57,7 @@ export const metadata: Metadata = {
       "Intercept, inspect, cache, mock, and replay every LLM call from your AI agents. Local proxy, one base_url change, no prompt uploads.",
     images: [
       {
-        url: "/Tether.PNG",
+        url: APP_ICON_PATH,
         width: 1024,
         height: 1024,
         alt: "Tether app icon",
@@ -63,7 +70,7 @@ export const metadata: Metadata = {
     title: "Tether - Local AI Agent Trace Debugger for macOS",
     description:
       "Intercept, inspect, cache, mock, and replay every LLM call from your AI agents. Local proxy, one base_url change, no prompt uploads.",
-    images: ["/Tether.PNG"],
+    images: [APP_ICON_PATH],
   },
   alternates: {
     canonical: SITE_URL,
@@ -78,6 +85,8 @@ const jsonLd = {
       "@id": `${SITE_URL}/#organization`,
       name: "Tether",
       url: SITE_URL,
+      logo: APP_ICON_URL,
+      image: APP_ICON_URL,
       description:
         "Local-first trace debugging, replay, and mocking tool for AI agents and LLM applications on macOS.",
     },
@@ -94,6 +103,7 @@ const jsonLd = {
         description: "Free during alpha",
       },
       publisher: { "@id": `${SITE_URL}/#organization` },
+      image: APP_ICON_URL,
       description:
         "Tether intercepts every LLM call from your AI agents, visualizes complex agent trees, and lets you cache, replay, or mock responses entirely locally on your Mac. Supports OpenAI, Anthropic, Ollama, LangChain, LangGraph, and more.",
       featureList: [
@@ -105,7 +115,7 @@ const jsonLd = {
         "API key storage in macOS Keychain",
         "Air-gapped — no data leaves the machine",
       ],
-      screenshot: `${SITE_URL}/Tether.PNG`,
+      screenshot: APP_ICON_URL,
     },
     {
       "@type": "WebSite",

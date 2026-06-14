@@ -15,8 +15,11 @@ struct TitleBar: View {
                     .foregroundStyle(palette.accent)
                     .frame(width: 26, height: 26)
                     .background(palette.accentBackground)
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(palette.accent.opacity(0.18), lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+                            .stroke(palette.accent.opacity(0.18), lineWidth: 1)
+                    )
 
                 Text("Tether")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -29,14 +32,20 @@ struct TitleBar: View {
                         .padding(.horizontal, 7)
                         .padding(.vertical, 2)
                         .background(palette.panelSecondary)
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(palette.border, lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
+                                .stroke(palette.border, lineWidth: 1)
+                        )
                 }
             }
             .padding(.horizontal, 12)
             .frame(height: 42)
-            .background(Color.white.opacity(0.72), in: Capsule())
-            .overlay(Capsule().stroke(palette.border.opacity(0.92), lineWidth: 1))
+            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: palette.panelRadius, style: .continuous)
+                    .stroke(palette.border.opacity(0.92), lineWidth: 1)
+            )
             .shadow(color: Color(hex: 0x0f172a).opacity(0.07), radius: 18, x: 0, y: 8)
 
             Spacer(minLength: 12)

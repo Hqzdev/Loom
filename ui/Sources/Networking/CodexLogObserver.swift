@@ -287,6 +287,7 @@ public actor CodexLogObserver {
 
         return AgentNode(
             id: draft.id,
+            agentName: "Codex",
             depth: index,
             stepName: draft.status == .running ? "Codex response streaming" : "Codex response \(index + 1)",
             timestamp: formatClock(seconds: draft.startedAt),

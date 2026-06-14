@@ -17,9 +17,5 @@ struct LoomApp: App {
         .commands {
             AgentTraceMenuCommands()
         }
-
-        Settings {
-            AppSettingsView()
-        }
     }
 }

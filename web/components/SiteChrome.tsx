@@ -25,6 +25,7 @@ const COMPANY_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
+// Renders the shared decorative product mark used in the header and footer.
 function LogoMark() {
   return (
     <img
@@ -32,7 +33,7 @@ function LogoMark() {
       aria-hidden="true"
       decoding="async"
       height="28"
-      src="/Tether.PNG"
+      src="/icon-1024.png"
       width="28"
     />
   );

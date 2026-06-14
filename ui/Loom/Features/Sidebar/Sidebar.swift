@@ -1,12 +1,9 @@
-import AppKit
 import ComposableArchitecture
 import Core
 import SwiftUI
 import UI
 
 struct Sidebar: View {
-    @Environment(\.openSettings) private var openSettings
-
     let nodes: [AgentNode]
     let filteredNodes: [AgentNode]
     let selectedNodeId: AgentNode.ID?
@@ -17,6 +14,7 @@ struct Sidebar: View {
     let liveSessionId: TraceSession.ID?
     let onSelectSession: (TraceSession.ID) -> Void
     let onSelect: (AgentNode) -> Void
+    let onShowSettings: () -> Void
     let palette: AgentTracePalette
 
     var body: some View {
@@ -119,8 +117,7 @@ struct Sidebar: View {
 
             VStack(spacing: 8) {
                 SidebarButton(title: "Settings", palette: palette) {
-                    openSettings()
-                    NSApp.activate(ignoringOtherApps: true)
+                    onShowSettings()
                 }
             }
             .padding(.horizontal, 12)
@@ -253,7 +250,7 @@ private struct SessionRow: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(palette.green.opacity(0.12))
-                        .clipShape(Capsule())
+                        .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
                 }
             }
             .padding(.horizontal, 9)
@@ -303,6 +300,8 @@ private struct CallRow: View {
                         .lineLimit(1)
 
                     HStack(spacing: 6) {
+                        AgentBadge(name: node.agentName, palette: palette)
+
                         Text(node.model)
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundStyle(palette.violet)
@@ -310,9 +309,9 @@ private struct CallRow: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 1.5)
                             .background(palette.violet.opacity(0.08))
-                            .clipShape(Capsule())
+                            .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
                             .overlay(
-                                Capsule()
+                                RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
                                     .stroke(palette.violetBorder, lineWidth: 1)
                             )
 
@@ -398,6 +397,8 @@ private extension ProxyConnectionStatus {
             return "checkmark.circle.fill"
         case .observingCodex:
             return "terminal.fill"
+        case .observingAgents:
+            return "rectangle.2.swap"
         case .offline:
             return "exclamationmark.triangle.fill"
         }
@@ -409,7 +410,7 @@ private extension ProxyConnectionStatus {
             return palette.amber.opacity(0.10)
         case .online:
             return palette.green.opacity(0.12)
-        case .observingCodex:
+        case .observingCodex, .observingAgents:
             return palette.green.opacity(0.12)
         case .offline:
             return palette.glassTint

@@ -143,7 +143,7 @@ private struct SessionRow: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(palette.green.opacity(0.12))
-                        .clipShape(Capsule())
+                        .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
                 }
             }
             .padding(.horizontal, 9)
