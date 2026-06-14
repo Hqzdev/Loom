@@ -163,7 +163,7 @@ async fn proxy(State(state): State<AppState>, req: Request) -> Response {
     };
 
     let trace_capture =
-        trace::TraceCapture::from_request(method.as_str(), &path, label, &body_bytes);
+        trace::TraceCapture::from_request(method.as_str(), &path, &path_and_query, label, &body_bytes);
     let model = trace_capture.model.clone();
     let preview = trace_capture.preview.clone();
     log_request(&method, &path, label, base.as_ref(), &model, &preview);

@@ -2,9 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use axum::{
     Json, Router,
-    extract::{Query, State},
-    http::{HeaderMap, StatusCode},
-    routing::get,
+    extract::{Path, Query, State},
+    http::{HeaderMap, HeaderName, StatusCode},
+    routing::{get, patch, post},
 };
 use chrono::{DateTime, Local, TimeZone};
 use rusqlite::{Connection, OptionalExtension, params};
@@ -15,6 +15,10 @@ use uuid::Uuid;
 use crate::{AppState, context, pricing};
 
 pub(crate) const MAX_CAPTURE_BYTES: usize = 256 * 1024;
+
+/// Largest request body we retain for replay. Prompts are small; anything
+/// bigger is dropped and the span is marked non-replayable (empty body).
+const REPLAY_MAX_BODY: usize = 1024 * 1024;
 
 #[derive(Clone)]
 pub(crate) struct TraceCapture {
@@ -34,12 +38,20 @@ pub(crate) struct TraceCapture {
     tool_result_ids: Vec<String>,
     /// Serialized `ContextInputs` describing what went into the prompt.
     context_inputs: String,
+    /// Stable fingerprint of (model, system, user) — the replay/invalidation key.
+    input_hash: String,
+    /// Raw request body retained for replay (empty when over `REPLAY_MAX_BODY`).
+    request_body: Vec<u8>,
+    /// Path + query of the original request, for replay routing.
+    request_target: String,
 }
 
 #[derive(Serialize)]
 struct TraceSnapshot {
     session: Option<TraceSessionDto>,
     nodes: Vec<AgentNodeDto>,
+    /// Spans whose upstream output was edited and which need a replay.
+    stale_node_ids: Vec<String>,
 }
 
 #[derive(Clone, Serialize)]
@@ -61,6 +73,42 @@ struct TraceQuery {
     session_id: Option<String>,
 }
 
+#[derive(Deserialize)]
+struct EditOutputRequest {
+    output: String,
+}
+
+#[derive(Serialize)]
+struct InvalidationResult {
+    node_id: String,
+    invalidated: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct DownstreamResult {
+    node_id: String,
+    downstream: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct ReplayResult {
+    node_id: String,
+    status_code: u16,
+    cost: String,
+    tokens_in: i64,
+    tokens_out: i64,
+    invalidated: Vec<String>,
+}
+
+struct ReplaySpec {
+    method: String,
+    provider: String,
+    target: String,
+    model: String,
+    session_id: String,
+    body: Vec<u8>,
+}
+
 #[derive(Serialize)]
 struct AgentNodeDto {
     id: String,
@@ -68,6 +116,8 @@ struct AgentNodeDto {
     parent_span_id: Option<String>,
     tool_use_ids: Value,
     context_inputs: Value,
+    input_hash: String,
+    stale: bool,
     depth: i64,
     step_name: String,
     timestamp: String,
@@ -136,6 +186,14 @@ struct TraceRow {
     tool_use_ids: String,
     /// Serialized `ContextInputs` for this call.
     context_inputs: String,
+    /// Replay/invalidation fingerprint.
+    input_hash: String,
+    /// Whether an upstream output this call depends on was edited since capture.
+    stale: bool,
+    /// Raw request body retained for replay (empty when not replayable).
+    request_body: Vec<u8>,
+    /// Path + query for replay routing.
+    request_target: String,
     /// Transient (not a column): `tool_result_id`s carried by the request, used
     /// to resolve lineage at insert time.
     tool_result_ids: Vec<String>,
@@ -151,7 +209,13 @@ struct ResponseSummary {
 }
 
 impl TraceCapture {
-    pub(crate) fn from_request(method: &str, path: &str, provider: &str, body: &[u8]) -> Self {
+    pub(crate) fn from_request(
+        method: &str,
+        path: &str,
+        target: &str,
+        provider: &str,
+        body: &[u8],
+    ) -> Self {
         let parsed = serde_json::from_slice::<Value>(body).ok();
         let model = parsed
             .as_ref()
@@ -187,13 +251,14 @@ impl TraceCapture {
             .as_ref()
             .map(extract_tool_result_ids)
             .unwrap_or_default();
-        let context_inputs = serde_json::to_string(&context::from_request(
-            parsed.as_ref(),
-            &prompt_system,
-            &prompt_user,
-            &model,
-        ))
-        .unwrap_or_else(|_| "{}".to_string());
+        let inputs = context::from_request(parsed.as_ref(), &prompt_system, &prompt_user, &model);
+        let input_hash = inputs.input_hash.clone();
+        let context_inputs = serde_json::to_string(&inputs).unwrap_or_else(|_| "{}".to_string());
+        let request_body = if body.len() <= REPLAY_MAX_BODY {
+            body.to_vec()
+        } else {
+            Vec::new()
+        };
 
         Self {
             id: Uuid::new_v4().to_string(),
@@ -209,6 +274,9 @@ impl TraceCapture {
             temperature,
             tool_result_ids,
             context_inputs,
+            input_hash,
+            request_body,
+            request_target: target.to_string(),
         }
     }
 }
@@ -223,6 +291,9 @@ pub(crate) fn router() -> Router<AppState> {
             "/api/traces/current",
             get(current_trace).delete(clear_trace),
         )
+        .route("/api/traces/{id}/output", patch(edit_output))
+        .route("/api/traces/{id}/downstream", get(list_downstream))
+        .route("/api/traces/{id}/replay", post(replay_node))
         .route("/api/cache", axum::routing::delete(clear_cache))
 }
 
@@ -237,6 +308,10 @@ pub(crate) fn init_schema(conn: &Connection) -> rusqlite::Result<()> {
     add_column_if_missing(conn, "trace_calls", "parent_span_id", "TEXT")?;
     add_column_if_missing(conn, "trace_calls", "tool_use_ids", "TEXT")?;
     add_column_if_missing(conn, "trace_calls", "context_inputs", "TEXT")?;
+    add_column_if_missing(conn, "trace_calls", "input_hash", "TEXT")?;
+    add_column_if_missing(conn, "trace_calls", "stale", "INTEGER NOT NULL DEFAULT 0")?;
+    add_column_if_missing(conn, "trace_calls", "request_body", "BLOB")?;
+    add_column_if_missing(conn, "trace_calls", "request_target", "TEXT")?;
     conn.execute_batch(
         "CREATE INDEX IF NOT EXISTS idx_trace_calls_trace_id
              ON trace_calls(trace_id);",
@@ -330,6 +405,10 @@ pub(crate) fn record_response(
         parent_span_id: None,
         tool_use_ids,
         context_inputs: capture.context_inputs.clone(),
+        input_hash: capture.input_hash.clone(),
+        stale: false,
+        request_body: capture.request_body.clone(),
+        request_target: capture.request_target.clone(),
         tool_result_ids: capture.tool_result_ids.clone(),
     };
 
@@ -368,6 +447,10 @@ pub(crate) fn record_upstream_error(
         parent_span_id: None,
         tool_use_ids: "[]".to_string(),
         context_inputs: capture.context_inputs.clone(),
+        input_hash: capture.input_hash.clone(),
+        stale: false,
+        request_body: capture.request_body.clone(),
+        request_target: capture.request_target.clone(),
         tool_result_ids: capture.tool_result_ids.clone(),
     };
 
@@ -488,6 +571,280 @@ async fn clear_cache(State(state): State<AppState>) -> Result<StatusCode, (Statu
     Ok(StatusCode::NO_CONTENT)
 }
 
+/// Edit a span's output. Every transitive descendant depended on that output
+/// (via the `tool_use`→`tool_result` edge), so they are marked stale and
+/// returned as the replay queue.
+async fn edit_output(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(payload): Json<EditOutputRequest>,
+) -> Result<Json<InvalidationResult>, (StatusCode, String)> {
+    let db = state.db.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        let conn = db.lock().map_err(|_| "trace database lock poisoned".to_string())?;
+        let session_id = node_session_id(&conn, &id)?;
+        conn.execute(
+            "UPDATE trace_calls SET response_text = ?1 WHERE id = ?2",
+            params![payload.output, id],
+        )
+        .map_err(|error| error.to_string())?;
+        let invalidated = descendants(&conn, &session_id, &id).map_err(|e| e.to_string())?;
+        mark_stale(&conn, &invalidated).map_err(|e| e.to_string())?;
+        Ok::<_, String>(InvalidationResult {
+            node_id: id,
+            invalidated,
+        })
+    })
+    .await
+    .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, format!("worker failed: {error}")))?
+    .map_err(map_node_error)?;
+
+    Ok(Json(result))
+}
+
+/// Dry run: which spans would be invalidated if this one's output changed.
+async fn list_downstream(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<DownstreamResult>, (StatusCode, String)> {
+    let db = state.db.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        let conn = db.lock().map_err(|_| "trace database lock poisoned".to_string())?;
+        let session_id = node_session_id(&conn, &id)?;
+        let downstream = descendants(&conn, &session_id, &id).map_err(|e| e.to_string())?;
+        Ok::<_, String>(DownstreamResult {
+            node_id: id,
+            downstream,
+        })
+    })
+    .await
+    .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, format!("worker failed: {error}")))?
+    .map_err(map_node_error)?;
+
+    Ok(Json(result))
+}
+
+/// Re-run a stale span against its upstream and refresh its recorded output.
+/// Upstream auth is taken from the caller's headers — never persisted — so this
+/// works for passthrough key mode without storing secrets. Replaying changes
+/// the output, so this span's descendants are re-marked stale.
+async fn replay_node(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<ReplayResult>, (StatusCode, String)> {
+    let db = state.db.clone();
+    let lookup_id = id.clone();
+    let spec = tokio::task::spawn_blocking(move || {
+        let conn = db.lock().map_err(|_| "trace database lock poisoned".to_string())?;
+        load_replay_spec(&conn, &lookup_id)
+    })
+    .await
+    .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, format!("worker failed: {error}")))?
+    .map_err(map_node_error)?;
+
+    if spec.body.is_empty() {
+        return Err((
+            StatusCode::CONFLICT,
+            "node is not replayable (request body was not retained)".to_string(),
+        ));
+    }
+
+    let base = if spec.provider == "anthropic" {
+        state.anthropic_upstream.clone()
+    } else {
+        state.openai_upstream.clone()
+    };
+    let url = format!("{base}{}", spec.target);
+    let method = reqwest::Method::from_bytes(spec.method.as_bytes())
+        .unwrap_or(reqwest::Method::POST);
+
+    let mut forward_headers = HeaderMap::new();
+    for (name, value) in headers.iter() {
+        if is_forbidden_replay_header(name) {
+            continue;
+        }
+        forward_headers.insert(name.clone(), value.clone());
+    }
+
+    let started = now_millis();
+    let response = state
+        .client
+        .request(method, &url)
+        .headers(forward_headers)
+        .body(spec.body)
+        .send()
+        .await
+        .map_err(|error| (StatusCode::BAD_GATEWAY, format!("replay upstream error: {error}")))?;
+
+    let status_code = response.status().as_u16();
+    let content_type = response
+        .headers()
+        .get(axum::http::header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or("")
+        .to_string();
+    let header_request_id = response_request_id(response.headers());
+    let body = response
+        .bytes()
+        .await
+        .map_err(|error| (StatusCode::BAD_GATEWAY, format!("replay read error: {error}")))?;
+    let latency_ms = (now_millis() - started).max(0);
+
+    let summary = summarize_response(&content_type, &body);
+    let cost = pricing::estimate_cost(&spec.model, summary.tokens_in, summary.tokens_out);
+    let tool_use_ids =
+        serde_json::to_string(&summary.tool_use_ids).unwrap_or_else(|_| "[]".to_string());
+    let request_id = header_request_id
+        .or_else(|| summary.request_id.clone())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "-".to_string());
+
+    let db = state.db.clone();
+    let session_id = spec.session_id.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        let conn = db.lock().map_err(|_| "trace database lock poisoned".to_string())?;
+        conn.execute(
+            "UPDATE trace_calls
+             SET response_text = ?1, response_language = ?2, tokens_in = ?3, tokens_out = ?4,
+                 cost = ?5, status_code = ?6, latency_ms = ?7, cache_status = 'miss',
+                 tool_use_ids = ?8, request_id = ?9, stale = 0
+             WHERE id = ?10",
+            params![
+                summary.text,
+                summary.language,
+                summary.tokens_in,
+                summary.tokens_out,
+                cost,
+                i64::from(status_code),
+                latency_ms,
+                tool_use_ids,
+                request_id,
+                id,
+            ],
+        )
+        .map_err(|error| error.to_string())?;
+        let invalidated = descendants(&conn, &session_id, &id).map_err(|e| e.to_string())?;
+        mark_stale(&conn, &invalidated).map_err(|e| e.to_string())?;
+        Ok::<_, String>(ReplayResult {
+            node_id: id,
+            status_code,
+            cost,
+            tokens_in: summary.tokens_in,
+            tokens_out: summary.tokens_out,
+            invalidated,
+        })
+    })
+    .await
+    .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, format!("worker failed: {error}")))?
+    .map_err(map_node_error)?;
+
+    Ok(Json(result))
+}
+
+fn map_node_error(message: String) -> (StatusCode, String) {
+    if message == "trace node not found" {
+        (StatusCode::NOT_FOUND, message)
+    } else {
+        (StatusCode::INTERNAL_SERVER_ERROR, message)
+    }
+}
+
+fn node_session_id(conn: &Connection, id: &str) -> Result<String, String> {
+    conn.query_row(
+        "SELECT session_id FROM trace_calls WHERE id = ?1",
+        [id],
+        |row| row.get::<_, Option<String>>(0),
+    )
+    .optional()
+    .map_err(|error| error.to_string())?
+    .map(|session_id| session_id.unwrap_or_default())
+    .ok_or_else(|| "trace node not found".to_string())
+}
+
+fn load_replay_spec(conn: &Connection, id: &str) -> Result<ReplaySpec, String> {
+    conn.query_row(
+        "SELECT method, provider, request_target, model, session_id, request_body
+         FROM trace_calls WHERE id = ?1",
+        [id],
+        |row| {
+            Ok(ReplaySpec {
+                method: row.get(0)?,
+                provider: row.get(1)?,
+                target: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                model: row.get(3)?,
+                session_id: row.get::<_, Option<String>>(4)?.unwrap_or_default(),
+                body: row.get::<_, Option<Vec<u8>>>(5)?.unwrap_or_default(),
+            })
+        },
+    )
+    .optional()
+    .map_err(|error| error.to_string())?
+    .ok_or_else(|| "trace node not found".to_string())
+}
+
+/// Transitive descendants of `root_id` within a session, via `parent_span_id`.
+fn descendants(conn: &Connection, session_id: &str, root_id: &str) -> rusqlite::Result<Vec<String>> {
+    use std::collections::{HashMap, HashSet, VecDeque};
+
+    let mut stmt =
+        conn.prepare("SELECT id, parent_span_id FROM trace_calls WHERE session_id = ?1")?;
+    let edges = stmt
+        .query_map([session_id], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+
+    let mut children: HashMap<String, Vec<String>> = HashMap::new();
+    for (id, parent) in &edges {
+        if let Some(parent) = parent {
+            children.entry(parent.clone()).or_default().push(id.clone());
+        }
+    }
+
+    let mut out = Vec::new();
+    let mut seen = HashSet::new();
+    let mut queue: VecDeque<String> = children
+        .get(root_id)
+        .cloned()
+        .unwrap_or_default()
+        .into_iter()
+        .collect();
+    while let Some(node) = queue.pop_front() {
+        if !seen.insert(node.clone()) {
+            continue;
+        }
+        out.push(node.clone());
+        if let Some(kids) = children.get(&node) {
+            queue.extend(kids.iter().cloned());
+        }
+    }
+
+    Ok(out)
+}
+
+fn mark_stale(conn: &Connection, ids: &[String]) -> rusqlite::Result<()> {
+    for id in ids {
+        conn.execute("UPDATE trace_calls SET stale = 1 WHERE id = ?1", [id])?;
+    }
+    Ok(())
+}
+
+fn is_forbidden_replay_header(name: &HeaderName) -> bool {
+    matches!(
+        name.as_str(),
+        "host"
+            | "content-length"
+            | "connection"
+            | "keep-alive"
+            | "transfer-encoding"
+            | "upgrade"
+            | "te"
+            | "trailer"
+            | "proxy-connection"
+    )
+}
+
 fn fetch_snapshot(
     db: &Arc<Mutex<Connection>>,
     requested_session_id: Option<String>,
@@ -504,7 +861,7 @@ fn fetch_snapshot(
                 latency_ms, request_id, prompt_system, prompt_user, response_text,
                 response_language, error_code, error_message, error_detail, tokens_in,
                 tokens_out, cost, temperature, trace_id, parent_span_id,
-                tool_use_ids, context_inputs
+                tool_use_ids, context_inputs, input_hash, stale
          FROM trace_calls
          WHERE session_id = ?1
          ORDER BY created_at ASC
@@ -538,6 +895,10 @@ fn fetch_snapshot(
                 parent_span_id: row.get(22)?,
                 tool_use_ids: row.get::<_, Option<String>>(23)?.unwrap_or_else(|| "[]".to_string()),
                 context_inputs: row.get::<_, Option<String>>(24)?.unwrap_or_else(|| "{}".to_string()),
+                input_hash: row.get::<_, Option<String>>(25)?.unwrap_or_default(),
+                stale: row.get::<_, Option<i64>>(26)?.unwrap_or(0) != 0,
+                request_body: Vec::new(),
+                request_target: String::new(),
                 tool_result_ids: Vec::new(),
             })
         })?
@@ -550,6 +911,11 @@ fn fetch_snapshot(
         .unwrap_or(1)
         .max(1);
     let depths = compute_depths(&rows);
+    let stale_node_ids = rows
+        .iter()
+        .filter(|row| row.stale)
+        .map(|row| row.id.clone())
+        .collect();
     let nodes = rows
         .into_iter()
         .map(|row| {
@@ -561,6 +927,7 @@ fn fetch_snapshot(
     Ok(TraceSnapshot {
         session: Some(session),
         nodes,
+        stale_node_ids,
     })
 }
 
@@ -705,6 +1072,8 @@ fn row_to_node(depth: i64, row: TraceRow, max_latency: i64) -> AgentNodeDto {
         parent_span_id: row.parent_span_id,
         tool_use_ids,
         context_inputs,
+        input_hash: row.input_hash,
+        stale: row.stale,
         depth,
         step_name,
         timestamp: format_timestamp(row.created_at),
@@ -756,9 +1125,10 @@ fn insert_trace_row(db: &Arc<Mutex<Connection>>, row: TraceRow, status: &str) {
                  latency_ms, request_id, prompt_system, prompt_user, response_text,
                  response_language, error_code, error_message, error_detail, tokens_in,
                  tokens_out, cost, temperature, trace_id, parent_span_id, tool_use_ids,
-                 context_inputs)
+                 context_inputs, input_hash, stale, request_body, request_target)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14,
-                     ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26)",
+                     ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26,
+                     ?27, ?28, ?29, ?30)",
             params![
                 row.id,
                 session.id,
@@ -786,6 +1156,10 @@ fn insert_trace_row(db: &Arc<Mutex<Connection>>, row: TraceRow, status: &str) {
                 parent_span_id,
                 row.tool_use_ids,
                 row.context_inputs,
+                row.input_hash,
+                row.stale as i64,
+                row.request_body,
+                row.request_target,
             ],
         );
         println!("  captured trace node: {status}");
