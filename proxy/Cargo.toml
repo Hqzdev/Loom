@@ -9,6 +9,7 @@ edition = "2024"
 members = ["crates/*"]
 
 [dependencies]
+loom-cache = { path = "crates/loom-cache" }
 loom-crypto = { path = "crates/loom-crypto" }
 loom-domain = { path = "crates/loom-domain" }
 tokio = { version = "1", features = ["full"] }

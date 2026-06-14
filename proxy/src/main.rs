@@ -14,10 +14,9 @@ mod error;
 mod settings;
 mod trace;
 
-use std::fmt::Write as _;
 use std::io::Write;
 use std::sync::{Arc, Mutex};
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::time::Instant;
 
 use axum::{
     Router,
@@ -28,8 +27,8 @@ use axum::{
 };
 use bytes::Bytes;
 use futures_util::StreamExt;
-use rusqlite::{Connection, OptionalExtension, params};
-use sha2::{Digest, Sha256};
+use loom_cache::CachedResponse;
+use rusqlite::Connection;
 use tokio_stream::wrappers::ReceiverStream;
 
 use auth::AuthContext;
@@ -55,13 +54,6 @@ pub(crate) struct AppState {
     auth: Option<Arc<AuthContext>>,
 }
 
-/// A response we can replay from the cache.
-struct CachedResponse {
-    status: u16,
-    content_type: String,
-    body: Vec<u8>,
-}
-
 #[tokio::main]
 async fn main() {
     let openai =
@@ -76,21 +68,9 @@ async fn main() {
 
     let conn =
         Connection::open(&db_path).unwrap_or_else(|e| panic!("loom: cannot open {db_path}: {e}"));
-    conn.execute_batch(
-        "PRAGMA journal_mode=WAL;
-         CREATE TABLE IF NOT EXISTS cache (
-             key          TEXT PRIMARY KEY,
-             created_at   INTEGER NOT NULL,
-             provider     TEXT,
-             model        TEXT,
-             req_preview  TEXT,
-             status       INTEGER NOT NULL,
-             content_type TEXT,
-             body         BLOB NOT NULL,
-             hits         INTEGER NOT NULL DEFAULT 0
-         );",
-    )
-    .expect("loom: cannot init cache schema");
+    conn.execute_batch("PRAGMA journal_mode=WAL;")
+        .expect("loom: cannot enable WAL mode");
+    loom_cache::init_schema(&conn).expect("loom: cannot init cache schema");
     trace::init_schema(&conn).expect("loom: cannot init trace schema");
 
     let client = reqwest::Client::new();
@@ -168,7 +148,7 @@ async fn proxy(State(state): State<AppState>, req: Request) -> Response {
     // Only cache idempotent-ish POSTs (the actual LLM calls) when enabled.
     let cacheable = state.cache_enabled && method == Method::POST;
     let key = if cacheable {
-        cache_key(&method, &path_and_query, &body_bytes)
+        loom_cache::cache_key(method.as_str(), &path_and_query, &body_bytes)
     } else {
         String::new()
     };
@@ -177,7 +157,7 @@ async fn proxy(State(state): State<AppState>, req: Request) -> Response {
     if cacheable {
         let db = state.db.clone();
         let k = key.clone();
-        if let Ok(Some(c)) = tokio::task::spawn_blocking(move || cache_get(&db, &k)).await {
+        if let Ok(Some(c)) = tokio::task::spawn_blocking(move || loom_cache::get(&db, &k)).await {
             let latency_ms = started.elapsed().as_millis() as i64;
             let trace_db = state.db.clone();
             let cached_capture = trace_capture.clone();
@@ -313,7 +293,7 @@ async fn proxy(State(state): State<AppState>, req: Request) -> Response {
                 );
 
                 if store {
-                    cache_put(
+                    loom_cache::put(
                         &db,
                         &key,
                         &provider,
@@ -356,87 +336,6 @@ fn cached_response(c: CachedResponse) -> Response {
         HeaderValue::from_static("hit"),
     );
     response
-}
-
-// ---------- cache helpers (run inside spawn_blocking) ----------
-
-fn cache_get(db: &Mutex<Connection>, key: &str) -> Option<CachedResponse> {
-    let conn = db.lock().ok()?;
-    let found = conn
-        .query_row(
-            "SELECT status, content_type, body FROM cache WHERE key = ?1",
-            [key],
-            |row| {
-                Ok(CachedResponse {
-                    status: row.get::<_, i64>(0)? as u16,
-                    content_type: row.get::<_, Option<String>>(1)?.unwrap_or_default(),
-                    body: row.get(2)?,
-                })
-            },
-        )
-        .optional()
-        .ok()
-        .flatten();
-    if found.is_some() {
-        let _ = conn.execute("UPDATE cache SET hits = hits + 1 WHERE key = ?1", [key]);
-    }
-    found
-}
-
-#[allow(clippy::too_many_arguments)]
-fn cache_put(
-    db: &Mutex<Connection>,
-    key: &str,
-    provider: &str,
-    model: &str,
-    preview: &str,
-    status: u16,
-    content_type: &str,
-    body: &[u8],
-) {
-    if let Ok(conn) = db.lock() {
-        let _ = conn.execute(
-            "INSERT OR REPLACE INTO cache
-                (key, created_at, provider, model, req_preview, status, content_type, body, hits)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8,
-                COALESCE((SELECT hits FROM cache WHERE key = ?1), 0))",
-            params![
-                key,
-                now_unix(),
-                provider,
-                model,
-                preview,
-                status as i64,
-                content_type,
-                body
-            ],
-        );
-    }
-}
-
-fn cache_key(method: &Method, path_and_query: &str, body: &[u8]) -> String {
-    let mut h = Sha256::new();
-    h.update(method.as_str().as_bytes());
-    h.update(b"\n");
-    h.update(path_and_query.as_bytes());
-    h.update(b"\n");
-    h.update(body);
-    to_hex(&h.finalize())
-}
-
-fn to_hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        let _ = write!(s, "{b:02x}");
-    }
-    s
-}
-
-fn now_unix() -> i64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs() as i64)
-        .unwrap_or(0)
 }
 
 /// Headers that must not be forwarded across a proxy hop (RFC 9110 §7.6.1).

@@ -1153,6 +1153,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "616ec5685824bcc94416c6d4a7a446eea774a31efd7062c8480ba6fd06d7a6e5"
 
 [[package]]
+name = "loom-cache"
+version = "0.1.0"
+dependencies = [
+ "rusqlite",
+ "sha2",
+]
+
+[[package]]
 name = "loom-crypto"
 version = "0.1.0"
 dependencies = [
@@ -1180,6 +1188,7 @@ dependencies = [
  "chrono",
  "futures-util",
  "jsonwebtoken",
+ "loom-cache",
  "loom-crypto",
  "loom-domain",
  "rand_core",
