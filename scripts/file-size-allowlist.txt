@@ -6,7 +6,8 @@
 # list as its split lands. Do NOT add new entries without an accompanying reason.
 
 # Phase 2 target — Rust proxy god files
-proxy/src/trace.rs
+# proxy/src/trace.rs — DONE: split into src/trace/{capture,summarize,store,
+#   sessions,query,node,schema,routes,text}.rs
 proxy/src/main.rs
 proxy/src/auth/mod.rs
 proxy/src/settings.rs
