@@ -26,6 +26,7 @@ use rusqlite::Connection;
 use auth::AuthContext;
 use logging::{BOLD, CYAN, DIM, RESET};
 
+/// Shared application state injected into every proxy and API route.
 #[derive(Clone)]
 pub(crate) struct AppState {
     client: reqwest::Client,
@@ -125,6 +126,7 @@ async fn main() {
         .expect("loom: server crashed");
 }
 
+/// Reads an API key from the environment, trimming empty values to `None`.
 fn read_api_key(name: &str) -> Option<Arc<str>> {
     std::env::var(name)
         .ok()

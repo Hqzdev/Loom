@@ -8,13 +8,16 @@ import Security
 /// rule); it does not collide with the existing `agenttrace.proxy.*`
 /// UserDefaults keys, which stay untouched.
 public enum KeychainStore {
+    /// Keychain service namespace for all provider API-key accounts.
     public static let service = "dev.tether.loom.providerKeys"
 
+    /// Provider API-key slots stored under the shared Tether Keychain service.
     public enum Account: String, CaseIterable {
         case openAIAPIKey = "openai-api-key"
         case anthropicAPIKey = "anthropic-api-key"
     }
 
+    /// Reads a provider key from the macOS Keychain when it exists.
     public static func read(_ account: Account) -> String? {
         var query = baseQuery(account)
         query[kSecReturnData as String] = true
@@ -31,7 +34,7 @@ public enum KeychainStore {
         return value
     }
 
-    /// Save (or, on empty input, delete) the key. Returns true on success.
+    /// Saves a provider key, or deletes it when the input is empty.
     @discardableResult
     public static func save(_ account: Account, value: String) -> Bool {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -59,16 +62,19 @@ public enum KeychainStore {
         return false
     }
 
+    /// Deletes a provider key from the macOS Keychain.
     @discardableResult
     public static func delete(_ account: Account) -> Bool {
         let status = SecItemDelete(baseQuery(account) as CFDictionary)
         return status == errSecSuccess || status == errSecItemNotFound
     }
 
+    /// Returns whether a provider key is present without exposing the key value to callers.
     public static func hasValue(_ account: Account) -> Bool {
         read(account) != nil
     }
 
+    /// Builds the shared generic-password query used by read, save, and delete operations.
     private static func baseQuery(_ account: Account) -> [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,

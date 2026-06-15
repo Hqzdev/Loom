@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::{AppState, auth::require_auth, error::ApiError};
 
+/// Authenticated bearer identity extracted from a validated access token.
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct AuthBearer {
     pub(crate) user_id: Uuid,
@@ -31,6 +32,7 @@ impl FromRequestParts<AppState> for AuthBearer {
     }
 }
 
+/// Extracts a non-empty bearer token from the Authorization header.
 fn bearer_token(headers: &HeaderMap) -> Result<&str, ApiError> {
     let header = headers
         .get(axum::http::header::AUTHORIZATION)

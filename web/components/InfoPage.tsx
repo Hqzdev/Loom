@@ -3,6 +3,9 @@ import type { SitePage } from "@/lib/site-pages";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import styles from "./InfoPage.module.css";
 
+/**
+ * Renders a data-driven marketing information page.
+ */
 export function InfoPage({ page }: { page: SitePage }) {
   return (
     <main className={`landing-page ${styles.page}`}>

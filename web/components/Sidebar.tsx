@@ -3,6 +3,9 @@
 import { Icon } from "./Icon";
 import type { TraceNode } from "@/lib/data";
 
+/**
+ * Renders the landing-page trace sidebar with local filtering and selection state.
+ */
 export function Sidebar({
   nodes,
   selId,

@@ -1,8 +1,9 @@
-// Tether mock session data (ported from the example app's data.jsx)
 import type { IconName } from "@/components/Icon";
 
+/** Status values used by the interactive product demo nodes. */
 export type NodeStatus = "success" | "cached" | "error";
 
+/** Mock trace session metadata shown in the product demo. */
 export interface Session {
   id: string;
   title: string;
@@ -10,6 +11,7 @@ export interface Session {
   startedAt: string;
 }
 
+/** Mock trace node shape used by the graph, sidebar, and inspector demos. */
 export interface TraceNode {
   id: string;
   depth: number;
@@ -32,6 +34,7 @@ export interface TraceNode {
   response: { lang: "json" | "text"; text: string };
 }
 
+/** Demo session shown on the landing page. */
 export const SESSION: Session = {
   id: "sess_a91f3c",
   title: "Customer Support Agent · Order #4471",
@@ -39,6 +42,7 @@ export const SESSION: Session = {
   startedAt: "14:22:07.184",
 };
 
+/** Demo trace graph shown on the landing page. */
 export const NODES: TraceNode[] = [
   {
     id: "n1",

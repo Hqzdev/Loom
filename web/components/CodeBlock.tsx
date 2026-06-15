@@ -1,13 +1,14 @@
 "use client";
 
+// Escapes text before it is inserted through dangerouslySetInnerHTML.
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Tiny JSON syntax highlighter -> returns an HTML string (ported from the app).
+// Returns tiny JSON-highlighted HTML for the landing-page inspector demo.
 function highlightJSON(line: string): string {
   let s = escapeHtml(line);
-  // strings (keys vs values handled by trailing colon)
+  // Keys and values share the same regex; the trailing colon identifies keys.
   s = s.replace(/"(\\.|[^"\\])*"(\s*:)?/g, (m) => {
     if (m.trimEnd().endsWith(":") || /"\s*:$/.test(m)) {
       return (
@@ -18,19 +19,22 @@ function highlightJSON(line: string): string {
     }
     return '<span class="tk-str">' + m + "</span>";
   });
-  // numbers
+  // Numbers are highlighted after strings so quoted numeric values stay strings.
   s = s.replace(
     /(^|[\s[,])(-?\d+\.?\d*)/g,
     (_m, pre: string, num: string) => pre + '<span class="tk-num">' + num + "</span>"
   );
-  // booleans / null
+  // Primitive tokens are highlighted after numbers to avoid partial matches.
   s = s.replace(/\b(true|false)\b/g, '<span class="tk-bool">$1</span>');
   s = s.replace(/\bnull\b/g, '<span class="tk-null">null</span>');
-  // punctuation / braces
+  // Punctuation is highlighted last so inserted span markup is not reprocessed.
   s = s.replace(/([{}[\],])/g, '<span class="tk-punc">$1</span>');
   return s;
 }
 
+/**
+ * Renders a read-only code table with optional JSON token highlighting and error-line emphasis.
+ */
 export function CodeBlock({
   text,
   lang,

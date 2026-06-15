@@ -11,6 +11,7 @@ const DOWNLOAD_HREF = "https://github.com/Hqzdev/Loom/releases/tag/v1.0";
 
 type LandingIconName = IconName;
 
+// Renders a landing-page icon using the shared icon map.
 function LandingIcon({
   name,
   className = "",
@@ -235,6 +236,7 @@ type ReplayState = "idle" | "running" | "done";
 type WaitlistState = "idle" | "submitting" | "done" | "error";
 type FeedbackState = "idle" | "submitting" | "done" | "error";
 
+// Tracks the user's reduced-motion preference for demo animation controls.
 function usePrefersReducedMotion() {
   const [reduce, setReduce] = useState(false);
 
@@ -249,6 +251,7 @@ function usePrefersReducedMotion() {
   return reduce;
 }
 
+// Reveals marked sections when they enter the viewport, with a no-observer fallback.
 function useRevealOnScroll() {
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
@@ -275,6 +278,7 @@ function useRevealOnScroll() {
   }, []);
 }
 
+// Returns the icon shown for one demo trace node.
 function nodeIconName(node: TraceNode): LandingIconName {
   if (node.status === "cached") return "database";
   if (node.status === "error") return "circle-exclamation";
@@ -282,16 +286,19 @@ function nodeIconName(node: TraceNode): LandingIconName {
   return node.icon as LandingIconName;
 }
 
+// Returns the latency badge class for one demo trace status.
 function nodeLatencyClass(status: NodeStatus) {
   if (status === "cached") return "cy";
   if (status === "error") return "pk";
   return "ok";
 }
 
+// Returns the compact status label shown in the demo graph.
 function statusLabel(status: NodeStatus) {
   return status === "cached" ? "CACHED" : status === "error" ? "ERROR" : "SUCCESS";
 }
 
+// Renders one compact node inside the animated landing-page demo.
 function MiniNode({
   node,
   depth,
@@ -326,6 +333,7 @@ function MiniNode({
   );
 }
 
+// Renders the small graph preview used inside the landing-page inspector.
 function InspectorGraph() {
   return (
     <div className="graphview" id="graphView">
@@ -336,6 +344,9 @@ function InspectorGraph() {
   );
 }
 
+/**
+ * Renders the public Tether landing page.
+ */
 export default function TetherLanding() {
   const reduce = usePrefersReducedMotion();
   const treeRef = useRef<HTMLDivElement>(null);

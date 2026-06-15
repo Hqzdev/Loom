@@ -1,11 +1,14 @@
 import Core
 import Foundation
 
+/// HTTP client used by the SwiftUI app to read and mutate the local proxy trace API.
 public struct TraceAPIClient: Sendable {
+    /// Error cases surfaced when the local proxy cannot be addressed or returns a failing status.
     public enum ClientError: LocalizedError {
         case invalidURL
         case badStatus(Int)
 
+        /// Human-readable error text used by SwiftUI error surfaces.
         public var errorDescription: String? {
             switch self {
             case .invalidURL:
@@ -23,6 +26,7 @@ public struct TraceAPIClient: Sendable {
         overrideBaseURL ?? ProxySettingsStore.current.proxyBaseURL
     }
 
+    /// Creates a trace API client, optionally overriding the persisted proxy base URL.
     public init(
         baseURL: URL? = nil,
         session: URLSession = .shared
@@ -31,6 +35,7 @@ public struct TraceAPIClient: Sendable {
         self.session = session
     }
 
+    /// Fetches the current trace snapshot, or a specific historic session when `sessionId` is provided.
     public func currentTrace(sessionId: TraceSession.ID? = nil) async throws -> TraceSnapshot {
         guard let url = traceURL(sessionId: sessionId) else {
             throw ClientError.invalidURL
@@ -51,6 +56,7 @@ public struct TraceAPIClient: Sendable {
         return try decoder.decode(TraceSnapshot.self, from: data)
     }
 
+    /// Fetches the known proxy sessions and the id of the currently live session.
     public func sessions() async throws -> TraceSessionList {
         guard let url = URL(string: "/api/sessions", relativeTo: baseURL)?.absoluteURL else {
             throw ClientError.invalidURL
@@ -71,6 +77,7 @@ public struct TraceAPIClient: Sendable {
         return try decoder.decode(TraceSessionList.self, from: data)
     }
 
+    /// Creates a fresh live proxy session and returns its server-generated metadata.
     public func createSession() async throws -> TraceSession {
         guard let url = URL(string: "/api/sessions", relativeTo: baseURL)?.absoluteURL else {
             throw ClientError.invalidURL
@@ -91,6 +98,7 @@ public struct TraceAPIClient: Sendable {
         return try decoder.decode(TraceSession.self, from: data)
     }
 
+    /// Deletes all nodes in the current live trace while keeping the proxy session alive.
     public func clearTrace() async throws {
         guard let url = URL(string: "/api/traces/current", relativeTo: baseURL)?.absoluteURL else {
             throw ClientError.invalidURL
@@ -107,6 +115,7 @@ public struct TraceAPIClient: Sendable {
         }
     }
 
+    /// Clears the local response cache maintained by the proxy.
     public func clearCache() async throws {
         guard let url = URL(string: "/api/cache", relativeTo: baseURL)?.absoluteURL else {
             throw ClientError.invalidURL
@@ -123,6 +132,7 @@ public struct TraceAPIClient: Sendable {
         }
     }
 
+    /// Builds the trace endpoint URL, adding `session_id` only for historic session reads.
     private func traceURL(sessionId: TraceSession.ID?) -> URL? {
         guard let baseTraceURL = URL(string: "/api/traces/current", relativeTo: baseURL)?.absoluteURL else {
             return nil

@@ -1,3 +1,4 @@
+/** Marketing page data rendered by the generic footer-page route. */
 export type SitePage = {
   slug: string;
   title: string;
@@ -14,6 +15,7 @@ export type SitePage = {
   };
 };
 
+/** Static marketing and company pages exposed by /[slug]. */
 export const SITE_PAGES: SitePage[] = [
   {
     slug: "product",
@@ -160,12 +162,13 @@ export const SITE_PAGES: SitePage[] = [
         bullets: ["Clone the repo", "Run npm install", "Start the web app", "Configure the local proxy"],
       },
       {
-        title: "Concepts",
+        title: "Architecture pages",
         body:
-          "Documentation will cover trace nodes, cache hits, replay boundaries, provider adapters, and local storage.",
+          "The generated docs section now covers the system overview, Rust proxy modules, macOS app modules, CI/CD, releases, local privacy, commands, and API boundaries.",
+        bullets: ["System overview", "Rust proxy", "macOS app", "CI/CD and releases"],
       },
     ],
-    cta: { label: "Open GitHub", href: "https://github.com/Hqzdev/Tether" },
+    cta: { label: "Open docs", href: "/docs" },
   },
   {
     slug: "cli-reference",
@@ -291,4 +294,5 @@ export const SITE_PAGES: SitePage[] = [
   },
 ];
 
+/** Lookup map used by the generic static page route. */
 export const SITE_PAGE_MAP = new Map(SITE_PAGES.map((page) => [page.slug, page]));

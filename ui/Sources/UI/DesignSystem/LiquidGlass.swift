@@ -37,6 +37,7 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
     }
 }
 
+/// Convenience modifiers for applying the shared liquid-glass treatment.
 public extension View {
     /// Applies a liquid-glass treatment inside an explicit shape.
     func liquidGlass<S: Shape>(

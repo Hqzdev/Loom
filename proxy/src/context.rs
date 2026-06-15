@@ -13,6 +13,7 @@ use serde::Serialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
+/// Context descriptor stored beside a trace call so replay can compare inputs.
 #[derive(Serialize)]
 pub(crate) struct ContextInputs {
     pub(crate) sources: Vec<ContextSource>,
@@ -20,6 +21,7 @@ pub(crate) struct ContextInputs {
     pub(crate) input_hash: String,
 }
 
+/// One summarized source of context, identified without storing the source body.
 #[derive(Serialize)]
 pub(crate) struct ContextSource {
     pub(crate) kind: &'static str, // file | mcp | tool | skill | memory | inline
@@ -163,6 +165,7 @@ fn detect_withheld(system: &str) -> Vec<String> {
     withheld
 }
 
+/// Returns whether a token looks enough like a filesystem path to expose as context.
 fn looks_like_path(token: &str) -> bool {
     if token.len() < 3 || token.contains(' ') {
         return false;
@@ -178,11 +181,13 @@ fn looks_like_path(token: &str) -> bool {
     absolute || relative || has_ext_segment
 }
 
+/// Shortens a SHA-256 digest for UI-friendly context source ids.
 fn short_hash(bytes: &[u8]) -> String {
     let full = hex(&Sha256::digest(bytes));
     full[..16].to_string()
 }
 
+/// Encodes bytes as lower-case hexadecimal.
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
     let mut out = String::with_capacity(bytes.len() * 2);

@@ -13,7 +13,7 @@ const PRODUCT_LINKS = [
 ];
 
 const DEVELOPER_LINKS = [
-  { label: "Documentation", href: "/documentation" },
+  { label: "Documentation", href: "/docs" },
   { label: "CLI reference", href: "/cli-reference" },
   { label: "Changelog", href: "/changelog" },
   { label: "GitHub", href: "https://github.com/Hqzdev/Tether", external: true },
@@ -39,6 +39,7 @@ function LogoMark() {
   );
 }
 
+// Renders an internal or external footer link with matching analytics metadata.
 function FooterLink({ href, label, external = false }: { href: string; label: string; external?: boolean }) {
   if (external) {
     return (
@@ -60,6 +61,9 @@ function FooterLink({ href, label, external = false }: { href: string; label: st
   );
 }
 
+/**
+ * Renders the shared marketing-site header and sticky navigation state.
+ */
 export function SiteHeader() {
   const [navStuck, setNavStuck] = useState(false);
 
@@ -100,6 +104,9 @@ export function SiteHeader() {
           <Link href="/#demo" onClick={() => trackEvent("navigation_clicked", { label: "Demo", location: "header" })}>
             Demo
           </Link>
+          <Link href="/docs" onClick={() => trackEvent("navigation_clicked", { label: "Docs", location: "header" })}>
+            Docs
+          </Link>
           <Link href="/#how" onClick={() => trackEvent("navigation_clicked", { label: "Setup", location: "header" })}>
             Setup
           </Link>
@@ -124,6 +131,9 @@ export function SiteHeader() {
   );
 }
 
+/**
+ * Renders the shared marketing-site footer and grouped footer links.
+ */
 export function SiteFooter() {
   return (
     <footer className="footer wrap">

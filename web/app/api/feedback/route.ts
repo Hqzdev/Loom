@@ -3,13 +3,15 @@ import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+/** Forces the feedback endpoint onto the Node.js runtime for filesystem and email access. */
 export const runtime = "nodejs";
+
+/** Prevents static caching so every feedback submission is processed live. */
 export const dynamic = "force-dynamic";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Returns the append-only feedback storage path, overridable for deployments.
 function feedbackFilePath() {
   return (
     process.env.TETHER_FEEDBACK_FILE ??
@@ -17,6 +19,7 @@ function feedbackFilePath() {
   );
 }
 
+// Escapes feedback before inserting it into the notification email body.
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -26,6 +29,7 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#039;");
 }
 
+// Normalizes JSON and form submissions into the same feedback payload shape.
 async function payloadFromRequest(request: NextRequest) {
   const contentType = request.headers.get("content-type") ?? "";
 
@@ -50,6 +54,45 @@ async function payloadFromRequest(request: NextRequest) {
   };
 }
 
+// Sends the notification only when Resend is configured, keeping local builds secret-free.
+function sendFeedbackEmail({
+  email,
+  context,
+  feedback,
+  source,
+  createdAt,
+}: {
+  email: string;
+  context: string;
+  feedback: string;
+  source: string;
+  createdAt: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return;
+  }
+
+  new Resend(apiKey).emails.send({
+    from: "onboarding@resend.dev",
+    to: process.env.TETHER_FEEDBACK_TO ?? "wkeyqwert@gmail.com",
+    subject: `Tether feedback from ${email}`,
+    html: `
+      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      <p><strong>Context:</strong> ${escapeHtml(context || "not provided")}</p>
+      <p><strong>Feedback:</strong></p>
+      <p>${escapeHtml(feedback).replace(/\n/g, "<br />")}</p>
+      <p><strong>Source:</strong> ${escapeHtml(source)}</p>
+      <p><strong>Time:</strong> ${createdAt}</p>
+    `,
+  }).catch((err: unknown) => {
+    console.error("Feedback email error:", err);
+  });
+}
+
+/**
+ * Accepts product feedback, stores it locally, and sends an email notification.
+ */
 export async function POST(request: NextRequest) {
   try {
     const payload = await payloadFromRequest(request);
@@ -58,6 +101,7 @@ export async function POST(request: NextRequest) {
     const feedback = payload.feedback.trim();
     const source = payload.source.trim() || "site";
 
+    // The hidden company field is a honeypot; successful no-op responses avoid bot feedback.
     if (payload.company.trim()) {
       return NextResponse.json({ ok: true });
     }
@@ -92,21 +136,7 @@ export async function POST(request: NextRequest) {
       "utf8",
     );
 
-    resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: process.env.TETHER_FEEDBACK_TO ?? "wkeyqwert@gmail.com",
-      subject: `Tether feedback from ${email}`,
-      html: `
-        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-        <p><strong>Context:</strong> ${escapeHtml(context || "not provided")}</p>
-        <p><strong>Feedback:</strong></p>
-        <p>${escapeHtml(feedback).replace(/\n/g, "<br />")}</p>
-        <p><strong>Source:</strong> ${escapeHtml(source)}</p>
-        <p><strong>Time:</strong> ${createdAt}</p>
-      `,
-    }).catch((err: unknown) => {
-      console.error("Feedback email error:", err);
-    });
+    sendFeedbackEmail({ email, context, feedback, source, createdAt });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

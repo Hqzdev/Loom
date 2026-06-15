@@ -98,8 +98,12 @@ const ICONS = {
   python: PythonIcon,
 } as const satisfies Record<string, IconSvgElement>;
 
+/** Supported icon names for Tether web components. */
 export type IconName = keyof typeof ICONS;
 
+/**
+ * Renders a Hugeicons glyph using the local icon name map.
+ */
 export function Icon({
   name,
   size = 14,

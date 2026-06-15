@@ -4,23 +4,27 @@ use serde::{Deserialize, Serialize};
 
 use super::summarize::ResponseSummary;
 
+/// Request body for editing the stored output of a captured node.
 #[derive(Deserialize)]
 pub(super) struct EditOutputRequest {
     pub(super) output: String,
 }
 
+/// Result returned after editing a node and marking stale descendants.
 #[derive(Serialize)]
 pub(super) struct InvalidationResult {
     pub(super) node_id: String,
     pub(super) invalidated: Vec<String>,
 }
 
+/// Result listing the downstream descendants of a node.
 #[derive(Serialize)]
 pub(super) struct DownstreamResult {
     pub(super) node_id: String,
     pub(super) downstream: Vec<String>,
 }
 
+/// Result returned after replaying a retained request body upstream.
 #[derive(Serialize)]
 pub(super) struct ReplayResult {
     pub(super) node_id: String,
@@ -31,6 +35,7 @@ pub(super) struct ReplayResult {
     pub(super) invalidated: Vec<String>,
 }
 
+/// Persisted request fields needed to replay a node.
 pub(super) struct ReplaySpec {
     pub(super) method: String,
     pub(super) provider: String,
@@ -40,6 +45,7 @@ pub(super) struct ReplaySpec {
     pub(super) body: Vec<u8>,
 }
 
+/// Database update payload produced after a replay succeeds.
 pub(super) struct ReplayUpdate {
     pub(super) node_id: String,
     pub(super) session_id: String,

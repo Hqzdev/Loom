@@ -2,15 +2,18 @@ import ComposableArchitecture
 import Core
 import SwiftUI
 
+/// Sidebar view that displays historic proxy sessions and the active live session.
 public struct SessionListView: View {
     let store: StoreOf<SessionListFeature>
     let palette: AgentTracePalette
 
+    /// Creates the session list view from a TCA store and design-system palette.
     public init(store: StoreOf<SessionListFeature>, palette: AgentTracePalette) {
         self.store = store
         self.palette = palette
     }
 
+    /// Renders the compact, scrollable session picker.
     public var body: some View {
         VStack(spacing: 0) {
             SidebarSectionHeader(
@@ -55,6 +58,7 @@ public struct SessionListView: View {
 private struct SessionsEmptyState: View {
     let palette: AgentTracePalette
 
+    /// Renders the empty state shown before proxy traffic creates sessions.
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "tray")
@@ -84,6 +88,7 @@ private struct SidebarSectionHeader: View {
     let detail: String
     let palette: AgentTracePalette
 
+    /// Renders the session section title and count label.
     var body: some View {
         HStack {
             Text(title)
@@ -113,6 +118,7 @@ private struct SessionRow: View {
     let onSelect: () -> Void
     let palette: AgentTracePalette
 
+    /// Renders one selectable session row with live and selected states.
     var body: some View {
         Button(action: onSelect) {
             HStack(spacing: 9) {

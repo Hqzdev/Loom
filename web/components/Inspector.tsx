@@ -5,8 +5,12 @@ import { Icon } from "./Icon";
 import { CodeBlock } from "./CodeBlock";
 import type { TraceNode } from "@/lib/data";
 
+/** Inspector tab ids used by the landing-page product demo. */
 export type Tab = "prompt" | "response" | "metadata";
 
+/**
+ * Renders the landing-page inspector demo for prompt, response, and metadata views.
+ */
 export function Inspector({
   node,
   tab,
@@ -164,6 +168,7 @@ export function Inspector({
   );
 }
 
+// Renders prompt role markers and line-numbered prompt text in the demo inspector.
 function PromptRows({
   role,
   body,
@@ -192,6 +197,7 @@ function PromptRows({
   );
 }
 
+// Renders selected trace metadata as key/value rows for the demo inspector.
 function Metadata({ node, edited }: { node: TraceNode; edited: boolean }) {
   const rows: [string, string, string][] = [
     ["Request ID", node.requestId, ""],

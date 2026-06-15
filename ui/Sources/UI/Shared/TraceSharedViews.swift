@@ -1,17 +1,20 @@
 import Core
 import SwiftUI
 
+/// Small colored indicator that mirrors a trace node status.
 public struct StatusDot: View {
     let status: NodeStatus
     let palette: AgentTracePalette
     let size: CGFloat
 
+    /// Creates a status indicator with the provided palette and visual size.
     public init(status: NodeStatus, palette: AgentTracePalette, size: CGFloat = 8) {
         self.status = status
         self.palette = palette
         self.size = size
     }
 
+    /// Renders the status dot with a soft state-colored outline.
     public var body: some View {
         Circle()
             .fill(palette.color(for: status))
@@ -24,11 +27,13 @@ public struct StatusDot: View {
     }
 }
 
+/// Compact badge that identifies which agent produced a trace node.
 public struct AgentBadge: View {
     let name: String
     let palette: AgentTracePalette
     let compact: Bool
 
+    /// Creates an agent badge, optionally using the denser layout for graph cards.
     public init(
         name: String,
         palette: AgentTracePalette,
@@ -39,6 +44,7 @@ public struct AgentBadge: View {
         self.compact = compact
     }
 
+    /// Renders a symbol and label with source-specific tinting.
     public var body: some View {
         HStack(spacing: compact ? 3 : 5) {
             Image(systemName: symbolName)
@@ -60,55 +66,57 @@ public struct AgentBadge: View {
         .help(name)
     }
 
+    /// Chooses a compact SF Symbol that maps known local agents to recognizable icons.
     private var symbolName: String {
         let normalized = name.lowercased()
-
         if normalized.contains("codex") {
             return "terminal.fill"
         }
-
         if normalized.contains("claude") {
             return "cloud.fill"
         }
-
         return "cpu.fill"
     }
 
+    /// Chooses the badge tint based on the agent identity.
     private var tint: Color {
         let normalized = name.lowercased()
-
         if normalized.contains("codex") {
             return palette.accent
         }
-
         if normalized.contains("claude") {
             return palette.cyan
         }
-
         return palette.textTertiary
     }
 }
 
+/// Vertical dotted divider shared by graph and settings surfaces.
 public struct DividerLine: View {
     let palette: AgentTracePalette
 
+    /// Creates a vertical divider using the active palette.
     public init(palette: AgentTracePalette) {
         self.palette = palette
     }
 
+    /// Renders the reusable dotted divider in a one-point vertical frame.
     public var body: some View {
         DottedDivider(palette: palette, vertical: true)
             .frame(width: 1)
     }
 }
 
+/// Horizontal dotted divider shared by graph and settings surfaces.
 public struct HorizontalDividerLine: View {
     let palette: AgentTracePalette
 
+    /// Creates a horizontal divider using the active palette.
     public init(palette: AgentTracePalette) {
         self.palette = palette
     }
 
+    /// Renders the reusable dotted divider in a one-point horizontal frame.
     public var body: some View {
         DottedDivider(palette: palette, vertical: false)
             .frame(height: 1)
@@ -119,6 +127,7 @@ private struct DottedDivider: View {
     let palette: AgentTracePalette
     let vertical: Bool
 
+    /// Draws a single dotted line in the requested orientation.
     var body: some View {
         Canvas { context, size in
             var path = Path()
@@ -140,17 +149,19 @@ private struct DottedDivider: View {
     }
 }
 
+/// Full-window graph background with the active stage color and blueprint grid.
 public struct StageBackground: View {
     let palette: AgentTracePalette
 
+    /// Creates the trace stage background from the current palette.
     public init(palette: AgentTracePalette) {
         self.palette = palette
     }
 
+    /// Renders the background and non-interactive grid behind all trace content.
     public var body: some View {
         ZStack {
             palette.stage
-
             BlueprintGrid(lineColor: palette.gridLine)
         }
         .ignoresSafeArea()
@@ -160,6 +171,7 @@ public struct StageBackground: View {
 private struct BlueprintGrid: View {
     let lineColor: Color
 
+    /// Draws the blueprint grid at fixed intervals so graph movement has spatial reference.
     var body: some View {
         Canvas { context, size in
             let horizontalStep: CGFloat = 96

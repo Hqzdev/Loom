@@ -1,11 +1,13 @@
 import Foundation
 
+/// Persisted settings used to configure and launch the local proxy process.
 public struct ProxySettings: Equatable, Sendable {
     public var port: Int
     public var openAIUpstreamURL: String
     public var anthropicUpstreamURL: String
     public var localCacheEnabled: Bool
 
+    /// Creates a complete proxy configuration from user-editable settings.
     public init(
         port: Int,
         openAIUpstreamURL: String,
@@ -18,16 +20,20 @@ public struct ProxySettings: Equatable, Sendable {
         self.localCacheEnabled = localCacheEnabled
     }
 
+    /// Address passed to the Rust proxy as its local listen socket.
     public var listenAddress: String {
         "127.0.0.1:\(port)"
     }
 
+    /// Base URL used by the Swift app when calling the local proxy API.
     public var proxyBaseURL: URL {
         URL(string: "http://127.0.0.1:\(port)") ?? ProxySettingsStore.defaults.proxyBaseURL
     }
 }
 
+/// UserDefaults-backed storage for proxy settings that are safe to persist outside Keychain.
 public enum ProxySettingsStore {
+    /// Default local proxy configuration for first launch.
     public static let defaults = ProxySettings(
         port: 8080,
         openAIUpstreamURL: "https://api.openai.com",
@@ -42,6 +48,7 @@ public enum ProxySettingsStore {
         static let localCacheEnabled = "agenttrace.proxy.localCacheEnabled"
     }
 
+    /// Reads the saved proxy settings, falling back field-by-field to defaults.
     public static var current: ProxySettings {
         let defaultsStore = UserDefaults.standard
         return ProxySettings(
@@ -52,6 +59,7 @@ public enum ProxySettingsStore {
         )
     }
 
+    /// Persists proxy settings and keeps the legacy base-url key updated for older app code.
     public static func save(_ settings: ProxySettings) {
         let defaultsStore = UserDefaults.standard
         defaultsStore.set(settings.port, forKey: Key.port)
@@ -62,10 +70,12 @@ public enum ProxySettingsStore {
     }
 }
 
+/// Validation errors shown when proxy settings cannot be safely applied.
 public enum ProxySettingsValidationError: LocalizedError {
     case invalidPort
     case invalidURL(String)
 
+    /// Human-readable validation message for settings forms.
     public var errorDescription: String? {
         switch self {
         case .invalidPort:

@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Convenience color construction helpers used by design-system palette tokens.
 public extension Color {
     /// Creates an sRGB color from a hexadecimal RGB value.
     init(hex: UInt, alpha: Double = 1) {

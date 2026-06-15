@@ -3,6 +3,9 @@
 import { Icon } from "./Icon";
 import { SESSION, type TraceNode } from "@/lib/data";
 
+/**
+ * Renders the interactive landing-page trace graph demo.
+ */
 export function GraphCanvas({
   nodes,
   selId,
@@ -63,6 +66,7 @@ export function GraphCanvas({
   );
 }
 
+// Renders one node in the demo tree with indentation derived from trace depth.
 function TreeNode({
   node,
   first,

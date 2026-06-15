@@ -88,6 +88,7 @@ pub(super) fn backfill_missing_session_ids(conn: &Connection) -> rusqlite::Resul
     Ok(())
 }
 
+/// Converts a persisted session row into the UI-facing session DTO.
 pub(super) fn session_to_dto(id: String, created_at: i64, name: String) -> TraceSessionDto {
     TraceSessionDto {
         id,

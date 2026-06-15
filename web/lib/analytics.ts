@@ -7,6 +7,9 @@ declare global {
   }
 }
 
+/**
+ * Pushes a normalized analytics event into the browser dataLayer when available.
+ */
 export function trackEvent(eventName: string, params: AnalyticsParams = {}) {
   if (typeof window === "undefined") return;
 

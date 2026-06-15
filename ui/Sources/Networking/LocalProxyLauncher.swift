@@ -1,13 +1,17 @@
 import Foundation
 
+/// Starts and owns the local Rust proxy process for the macOS app runtime.
 @MainActor
 public final class LocalProxyLauncher {
+    /// Shared launcher used by app startup and settings actions.
     public static let shared = LocalProxyLauncher()
 
     private var process: Process?
 
+    /// Restricts process ownership to the shared launcher instance.
     private init() {}
 
+    /// Starts the proxy when an executable is available and returns whether it is running.
     @discardableResult
     public func startIfAvailable() -> Bool {
         if process?.isRunning == true {
@@ -44,18 +48,21 @@ public final class LocalProxyLauncher {
         }
     }
 
+    /// Terminates the running proxy process, if this launcher owns one.
     public func stop() {
         guard let process, process.isRunning else { return }
         process.terminate()
         self.process = nil
     }
 
+    /// Restarts the proxy process using the latest persisted proxy settings.
     @discardableResult
     public func restart() -> Bool {
         stop()
         return startIfAvailable()
     }
 
+    /// Searches first for a local development binary, then for the bundled release helper.
     private func findProxyBinary() -> URL? {
         let fileURL = URL(fileURLWithPath: #filePath)
         let repoRoot = fileURL
@@ -72,6 +79,7 @@ public final class LocalProxyLauncher {
         return candidates.first { FileManager.default.isExecutableFile(atPath: $0.path) }
     }
 
+    /// Builds the environment passed to the proxy without persisting provider secrets.
     private func proxyEnvironment(runtimeDirectory: URL) -> [String: String] {
         var environment = ProcessInfo.processInfo.environment
         let settings = ProxySettingsStore.current
@@ -91,6 +99,7 @@ public final class LocalProxyLauncher {
         return environment
     }
 
+    /// Returns an appendable proxy log file inside the app cache directory.
     private func logFileURL(in runtimeDirectory: URL) throws -> URL {
         let url = runtimeDirectory.appendingPathComponent("proxy.log")
         if !FileManager.default.fileExists(atPath: url.path) {
@@ -101,6 +110,7 @@ public final class LocalProxyLauncher {
         return url
     }
 
+    /// Creates the cache-backed runtime directory used for the proxy database and logs.
     private static func runtimeDirectory() throws -> URL {
         let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         let directory = root.appendingPathComponent("Loom", isDirectory: true)

@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
-// Returns installable web app metadata and icon entries.
+/**
+ * Returns installable web app metadata and icon entries.
+ */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Tether",

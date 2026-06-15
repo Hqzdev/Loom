@@ -8,6 +8,7 @@ const YANDEX_METRIKA_ID = 109761424;
 const APP_ICON_PATH = "/icon-1024.png";
 const APP_ICON_URL = `${SITE_URL}${APP_ICON_PATH}`;
 
+/** Global SEO, sharing, and install metadata for the Tether website. */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: "Tether",
@@ -239,6 +240,9 @@ const jsonLd = {
   ],
 };
 
+/**
+ * Renders the root HTML shell, global analytics tags, and page content.
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">

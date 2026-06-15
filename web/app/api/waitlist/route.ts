@@ -3,13 +3,15 @@ import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+/** Forces the waitlist endpoint onto the Node.js runtime for filesystem and email access. */
 export const runtime = "nodejs";
+
+/** Prevents static caching so every waitlist submission is processed live. */
 export const dynamic = "force-dynamic";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Returns the append-only waitlist storage path, overridable for deployments.
 function waitlistFilePath() {
   return (
     process.env.Tether_WAITLIST_FILE ??
@@ -17,6 +19,7 @@ function waitlistFilePath() {
   );
 }
 
+// Normalizes JSON and form submissions into the same waitlist payload shape.
 async function payloadFromRequest(request: NextRequest) {
   const contentType = request.headers.get("content-type") ?? "";
 
@@ -41,6 +44,42 @@ async function payloadFromRequest(request: NextRequest) {
   };
 }
 
+// Sends the notification only when Resend is configured, keeping local builds secret-free.
+function sendWaitlistEmail({
+  email,
+  name,
+  reason,
+  source,
+}: {
+  email: string;
+  name: string;
+  reason: string;
+  source: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return;
+  }
+
+  new Resend(apiKey).emails.send({
+    from: "onboarding@resend.dev",
+    to: "wkeyqwert@gmail.com",
+    subject: `Новая заявка в вейтлист от ${name || email}`,
+    html: `
+      <p><strong>Имя:</strong> ${name || "не указано"}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Причина:</strong> ${reason || "не указана"}</p>
+      <p><strong>Source:</strong> ${source}</p>
+      <p><strong>Время:</strong> ${new Date().toISOString()}</p>
+    `,
+  }).catch((err: unknown) => {
+    console.error("Resend error:", err);
+  });
+}
+
+/**
+ * Accepts a waitlist signup, stores it locally, and mirrors the signup to email.
+ */
 export async function POST(request: NextRequest) {
   try {
     const payload = await payloadFromRequest(request);
@@ -49,6 +88,7 @@ export async function POST(request: NextRequest) {
     const reason = payload.reason.trim();
     const source = payload.source.trim() || "site";
 
+    // The hidden company field is a honeypot; successful no-op responses avoid bot feedback.
     if (payload.company.trim()) {
       return NextResponse.json({ ok: true });
     }
@@ -75,20 +115,7 @@ export async function POST(request: NextRequest) {
       "utf8",
     );
 
-    resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: "wkeyqwert@gmail.com",
-      subject: `Новая заявка в вейтлист от ${name || email}`,
-      html: `
-        <p><strong>Имя:</strong> ${name || "не указано"}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Причина:</strong> ${reason || "не указана"}</p>
-        <p><strong>Source:</strong> ${source}</p>
-        <p><strong>Время:</strong> ${new Date().toISOString()}</p>
-      `,
-    }).catch((err: unknown) => {
-      console.error("Resend error:", err);
-    });
+    sendWaitlistEmail({ email, name, reason, source });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

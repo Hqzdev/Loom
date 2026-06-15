@@ -21,6 +21,7 @@ use super::google::verify_google_id_token;
 const GOOGLE_AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL: &str = "https://oauth2.googleapis.com/token";
 
+/// Query parameters Google returns to the OAuth callback endpoint.
 #[derive(Debug, Deserialize)]
 pub(crate) struct GoogleCallbackQuery {
     code: String,
