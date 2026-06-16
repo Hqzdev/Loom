@@ -49,6 +49,24 @@ export function InfoPage({ page }: { page: SitePage }) {
           </article>
         ))}
       </section>
+      {page.reviewRows ? (
+        <section className={`wrap ${styles.review}`}>
+          <div className={styles.reviewTable}>
+            <div className={`${styles.reviewRow} ${styles.reviewHead}`}>
+              <span>Question</span>
+              <span>Answer</span>
+              <span>Proof</span>
+            </div>
+            {page.reviewRows.map((row) => (
+              <div className={styles.reviewRow} key={row.control}>
+                <span>{row.control}</span>
+                <span>{row.evidence}</span>
+                <code>{row.proof}</code>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
       <SiteFooter />
     </main>
   );

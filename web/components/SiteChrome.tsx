@@ -8,7 +8,7 @@ import { trackEvent } from "@/lib/analytics";
 const PRODUCT_LINKS = [
   { label: "Product demo", href: "/#demo" },
   { label: "Setup", href: "/#how" },
-  { label: "Privacy review", href: "/#security" },
+  { label: "Privacy review", href: "/security" },
   { label: "Download", href: "/#download" },
 ];
 
@@ -87,7 +87,7 @@ export function SiteHeader() {
           <details className="nav-solutions">
             <summary>Solutions</summary>
             <div className="nav-menu">
-              <Link href="/#use-cases" onClick={() => trackEvent("navigation_clicked", { label: "Founders", location: "header_solutions" })}>
+              <Link href="/#features" onClick={() => trackEvent("navigation_clicked", { label: "Founders", location: "header_solutions" })}>
                 <span>Founders</span>
                 <small>Show proof before the buyer asks.</small>
               </Link>
@@ -95,7 +95,7 @@ export function SiteHeader() {
                 <span>Engineers</span>
                 <small>Replay the exact node that broke.</small>
               </Link>
-              <Link href="/#security" onClick={() => trackEvent("navigation_clicked", { label: "Security", location: "header_solutions" })}>
+              <Link href="/security" onClick={() => trackEvent("navigation_clicked", { label: "Security", location: "header_solutions" })}>
                 <span>Security</span>
                 <small>Keep traces local and inspectable.</small>
               </Link>
@@ -110,7 +110,7 @@ export function SiteHeader() {
           <Link href="/#how" onClick={() => trackEvent("navigation_clicked", { label: "Setup", location: "header" })}>
             Setup
           </Link>
-          <Link href="/#security" onClick={() => trackEvent("navigation_clicked", { label: "Security", location: "header" })}>
+          <Link href="/security" onClick={() => trackEvent("navigation_clicked", { label: "Security", location: "header" })}>
             Security
           </Link>
           <Link href="/#faq" onClick={() => trackEvent("navigation_clicked", { label: "FAQ", location: "header" })}>

@@ -9,6 +9,11 @@ export type SitePage = {
     body: string;
     bullets?: string[];
   }[];
+  reviewRows?: {
+    control: string;
+    evidence: string;
+    proof: string;
+  }[];
   cta?: {
     label: string;
     href: string;
@@ -268,6 +273,28 @@ export const SITE_PAGES: SitePage[] = [
         title: "Provider boundaries",
         body:
           "Requests are forwarded only to the providers you configure. Tether should be a debugging layer, not another place where secrets drift.",
+      },
+    ],
+    reviewRows: [
+      {
+        control: "Prompt and response storage",
+        evidence: "Trace data is written to local SQLite on the developer machine.",
+        proof: "~/.Tether/traces.sqlite",
+      },
+      {
+        control: "API key handling",
+        evidence: "Provider secrets are stored through macOS Keychain, not in plaintext project files.",
+        proof: "macOS Keychain",
+      },
+      {
+        control: "Telemetry posture",
+        evidence: "The app does not require a hosted Tether account for local debugging.",
+        proof: "No cloud workspace",
+      },
+      {
+        control: "Reproducible failures",
+        evidence: "Failed runs can be replayed from a selected node with mocked outputs.",
+        proof: "Replay chain",
       },
     ],
     cta: { label: "Contact security", href: "/contact" },
