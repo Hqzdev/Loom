@@ -37,6 +37,8 @@ xcodebuild \
   -configuration Release \
   -destination "generic/platform=macOS" \
   -derivedDataPath "$DERIVED_DATA" \
+  -skipMacroValidation \
+  -skipPackagePluginValidation \
   CODE_SIGNING_ALLOWED=NO \
   ENABLE_APP_SANDBOX=NO \
   build
