@@ -1,34 +1,48 @@
-//! Trace schema bootstrap: apply migrations and reconcile legacy databases.
+//! Trace schema bootstrap.
 
 use rusqlite::Connection;
 
-use super::sessions::backfill_missing_session_ids;
-
-/// Initializes the sessions/trace schema and migrates older databases:
-/// adds a missing `session_id` column and backfills it to the current session.
+/// Initializes the trace schema and reconciles older databases.
 ///
 /// # Errors
-/// Returns any `rusqlite` error from the migration or backfill steps.
+/// Returns any `rusqlite` error from the schema or migration steps.
 pub(crate) fn init_schema(conn: &Connection) -> rusqlite::Result<()> {
-    conn.execute_batch(include_str!(
-        "../../sqlite_migrations/20260601000000_sessions.sql"
-    ))?;
-    add_column_if_missing(
-        conn,
-        "sessions",
-        "name",
-        "TEXT NOT NULL DEFAULT 'Live Session'",
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS trace_calls (
+            id                TEXT PRIMARY KEY,
+            created_at        INTEGER NOT NULL,
+            provider          TEXT NOT NULL,
+            method            TEXT NOT NULL,
+            path              TEXT NOT NULL,
+            model             TEXT NOT NULL DEFAULT '-',
+            status_code       INTEGER NOT NULL,
+            cache_status      TEXT NOT NULL,
+            latency_ms        INTEGER NOT NULL,
+            request_id        TEXT NOT NULL DEFAULT '-',
+            prompt_system     TEXT NOT NULL DEFAULT '',
+            prompt_user       TEXT NOT NULL DEFAULT '',
+            response_text     TEXT NOT NULL DEFAULT '',
+            response_language TEXT NOT NULL DEFAULT 'text',
+            error_code        TEXT,
+            error_message     TEXT,
+            error_detail      TEXT,
+            tokens_in         INTEGER NOT NULL DEFAULT 0,
+            tokens_out        INTEGER NOT NULL DEFAULT 0,
+            cost              TEXT NOT NULL DEFAULT '$0.0000',
+            temperature       REAL,
+            trace_id          TEXT,
+            parent_span_id    TEXT,
+            tool_use_ids      TEXT,
+            context_inputs    TEXT,
+            input_hash        TEXT,
+            stale             INTEGER NOT NULL DEFAULT 0,
+            request_body      BLOB,
+            request_target    TEXT
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_trace_calls_created_at
+            ON trace_calls(created_at);",
     )?;
-    // Session-history columns are added before their migration runs because the
-    // partial index references `deleted_at` (SQLite lacks ADD COLUMN IF NOT EXISTS).
-    add_column_if_missing(conn, "sessions", "updated_at", "INTEGER")?;
-    add_column_if_missing(conn, "sessions", "deleted_at", "INTEGER")?;
-    conn.execute_batch(include_str!(
-        "../../sqlite_migrations/20260616000000_session_history.sql"
-    ))?;
-    if !table_has_column(conn, "trace_calls", "session_id")? {
-        conn.execute("ALTER TABLE trace_calls ADD COLUMN session_id TEXT", [])?;
-    }
     add_column_if_missing(conn, "trace_calls", "trace_id", "TEXT")?;
     add_column_if_missing(conn, "trace_calls", "parent_span_id", "TEXT")?;
     add_column_if_missing(conn, "trace_calls", "tool_use_ids", "TEXT")?;
@@ -40,8 +54,7 @@ pub(crate) fn init_schema(conn: &Connection) -> rusqlite::Result<()> {
     conn.execute_batch(
         "CREATE INDEX IF NOT EXISTS idx_trace_calls_trace_id
              ON trace_calls(trace_id);",
-    )?;
-    backfill_missing_session_ids(conn)
+    )
 }
 
 /// Adds `column` with `decl_type` to `table` if the column is not already present.

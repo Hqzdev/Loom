@@ -13,7 +13,7 @@ public actor CodexLogObserver {
         }.value
     }
 
-    /// Returns the latest response log id so new sessions can hide already-seen Codex events.
+    /// Returns the latest response log id so clears can hide already-seen Codex events.
     public func latestResponseEventId() async throws -> Int? {
         try await Task.detached(priority: .utility) {
             guard CodexDatabase.logsExist else {

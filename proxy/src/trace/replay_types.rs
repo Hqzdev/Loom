@@ -47,14 +47,12 @@ pub(super) struct ReplaySpec {
     pub(super) provider: String,
     pub(super) target: String,
     pub(super) model: String,
-    pub(super) session_id: String,
     pub(super) body: Vec<u8>,
 }
 
 /// Database update payload produced after a replay succeeds.
 pub(super) struct ReplayUpdate {
     pub(super) node_id: String,
-    pub(super) session_id: String,
     pub(super) status_code: u16,
     pub(super) latency_ms: i64,
     pub(super) cost: String,
@@ -70,7 +68,6 @@ impl ReplayUpdate {
     /// Builds a database update payload from replay response summary fields.
     pub(super) fn from_summary(
         node_id: String,
-        session_id: String,
         status_code: u16,
         latency_ms: i64,
         cost: String,
@@ -82,7 +79,6 @@ impl ReplayUpdate {
 
         Self {
             node_id,
-            session_id,
             status_code,
             latency_ms,
             cost,

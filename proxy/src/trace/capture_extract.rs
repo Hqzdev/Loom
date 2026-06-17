@@ -39,13 +39,18 @@ pub(super) fn extract_last_text(value: &Value) -> Option<String> {
 /// Extracts request-side tool result ids that link this call to its parent span.
 pub(super) fn extract_tool_result_ids(value: &Value) -> Vec<String> {
     let mut ids = Vec::new();
-    let Some(messages) = value.get("messages").and_then(Value::as_array) else {
-        return ids;
-    };
 
-    for message in messages {
-        collect_openai_tool_id(message, &mut ids);
-        collect_anthropic_tool_result_ids(message, &mut ids);
+    if let Some(messages) = value.get("messages").and_then(Value::as_array) {
+        for message in messages {
+            collect_openai_tool_id(message, &mut ids);
+            collect_anthropic_tool_result_ids(message, &mut ids);
+        }
+    }
+
+    if let Some(input) = value.get("input").and_then(Value::as_array) {
+        for item in input {
+            collect_openai_responses_tool_result_id(item, &mut ids);
+        }
     }
 
     ids
@@ -116,5 +121,36 @@ fn collect_anthropic_tool_result_ids(message: &Value, ids: &mut Vec<String>) {
         {
             ids.push(id.to_string());
         }
+    }
+}
+
+/// Collects OpenAI Responses API `function_call_output` ids.
+fn collect_openai_responses_tool_result_id(item: &Value, ids: &mut Vec<String>) {
+    if item.get("type").and_then(Value::as_str) == Some("function_call_output")
+        && let Some(id) = item.get("call_id").and_then(Value::as_str)
+    {
+        ids.push(id.to_string());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::extract_tool_result_ids;
+
+    #[test]
+    fn extracts_openai_responses_function_call_outputs() {
+        let value = json!({
+            "input": [
+                {
+                    "type": "function_call_output",
+                    "call_id": "call_123",
+                    "output": "ok"
+                }
+            ]
+        });
+
+        assert_eq!(extract_tool_result_ids(&value), vec!["call_123"]);
     }
 }

@@ -10,7 +10,7 @@ networking layer, and reusable SwiftUI components.
 ## Overview
 
 The target mirrors the reviewed API contract in `docs/api/openapi.json`.
-Keep model names and field semantics aligned with the OpenAPI trace and session
+Keep model names and field semantics aligned with the OpenAPI trace
 schemas so export, inspector, and graph rendering code all speak one language.
 
 ## Topics
@@ -18,8 +18,6 @@ schemas so export, inspector, and graph rendering code all speak one language.
 ### Trace Snapshots
 
 - ``TraceSnapshot``
-- ``TraceSession``
-- ``TraceSessionList``
 
 ### Graph Nodes
 

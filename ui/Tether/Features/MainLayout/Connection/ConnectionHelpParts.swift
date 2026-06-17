@@ -25,7 +25,7 @@ struct ConnectionHelpHeader: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(palette.text)
 
-                Text("Tether watches local Codex sessions and proxy traffic on this Mac.")
+                Text("Tether watches local Codex runs and proxy traffic on this Mac.")
                     .font(.callout)
                     .foregroundStyle(palette.textTertiary)
             }

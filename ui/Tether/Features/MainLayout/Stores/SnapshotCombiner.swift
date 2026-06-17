@@ -31,16 +31,7 @@ extension TraceStore {
             )
         }
 
-        return TraceSnapshot(
-            session: TraceSession(
-                id: "\(proxySnapshot.session?.id ?? "proxy")+\(codexSnapshot.session?.id ?? "codex")",
-                title: "Codex + Claude Code",
-                trigger: "Multi-agent observer",
-                startedAt: proxySnapshot.session?.startedAt ?? codexSnapshot.session?.startedAt ?? "--:--:--"
-            ),
-            nodes: nodes,
-            staleNodeIds: proxySnapshot.staleNodeIds + codexSnapshot.staleNodeIds
-        )
+        return TraceSnapshot(nodes: nodes, staleNodeIds: proxySnapshot.staleNodeIds + codexSnapshot.staleNodeIds)
     }
 
     /// Builds the sidebar summary for combined multi-agent snapshots.

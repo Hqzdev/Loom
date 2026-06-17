@@ -47,7 +47,7 @@
 		C0D900000000000000000014 /* Tether/Features/Inspector/Replay/InspectorReplayFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000014 /* Tether/Features/Inspector/Replay/InspectorReplayFooter.swift */; };
 		C0D900000000000000000015 /* Tether/Features/Inspector/Replay/TimeTravelButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000015 /* Tether/Features/Inspector/Replay/TimeTravelButtonStyle.swift */; };
 		C0D900000000000000000016 /* Tether/Features/MainLayout/Connection/ProxyConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000016 /* Tether/Features/MainLayout/Connection/ProxyConnectionStatus.swift */; };
-		C0D900000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+Sessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+Sessions.swift */; };
+		C0D900000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+TraceActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+TraceActions.swift */; };
 		C0D900000000000000000018 /* Tether/Features/MainLayout/Stores/SnapshotCombiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000018 /* Tether/Features/MainLayout/Stores/SnapshotCombiner.swift */; };
 		C0D900000000000000000019 /* Tether/Features/MainLayout/Layout/MainThreePaneWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000019 /* Tether/Features/MainLayout/Layout/MainThreePaneWorkspace.swift */; };
 		C0D90000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift */; };
@@ -88,9 +88,9 @@
 		C0E200000000000000000008 /* Tether/Features/Settings/Panes/ExtensionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E100000000000000000008 /* Tether/Features/Settings/Panes/ExtensionsSettingsView.swift */; };
 		C0E200000000000000000009 /* Tether/Features/Settings/Panes/DeveloperSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E100000000000000000009 /* Tether/Features/Settings/Panes/DeveloperSettingsView.swift */; };
 		C0F000000000000000000001 /* Tether/Features/Graph/Nodes/NodeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F100000000000000000001 /* Tether/Features/Graph/Nodes/NodeSource.swift */; };
-		C0F000000000000000000002 /* Tether/Features/MainLayout/Stores/SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F100000000000000000002 /* Tether/Features/MainLayout/Stores/SessionStore.swift */; };
-		C0F000000000000000000003 /* Tether/Features/Sidebar/Chrome/SessionSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F100000000000000000003 /* Tether/Features/Sidebar/Chrome/SessionSidebarView.swift */; };
 		C0F000000000000000000004 /* Tether/Features/Inspector/Replay/NonDeterminismResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F100000000000000000004 /* Tether/Features/Inspector/Replay/NonDeterminismResultsView.swift */; };
+		C0F000000000000000000005 /* Tether/Features/Update/UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F100000000000000000005 /* Tether/Features/Update/UpdateChecker.swift */; };
+		C0F000000000000000000006 /* Tether/Features/Update/UpdateBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F100000000000000000006 /* Tether/Features/Update/UpdateBannerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -131,7 +131,7 @@
 		C0D800000000000000000014 /* Tether/Features/Inspector/Replay/InspectorReplayFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Inspector/Replay/InspectorReplayFooter.swift; sourceTree = SOURCE_ROOT; };
 		C0D800000000000000000015 /* Tether/Features/Inspector/Replay/TimeTravelButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Inspector/Replay/TimeTravelButtonStyle.swift; sourceTree = SOURCE_ROOT; };
 		C0D800000000000000000016 /* Tether/Features/MainLayout/Connection/ProxyConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Connection/ProxyConnectionStatus.swift; sourceTree = SOURCE_ROOT; };
-		C0D800000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+Sessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Tether/Features/MainLayout/Stores/TraceStore+Sessions.swift"; sourceTree = SOURCE_ROOT; };
+		C0D800000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+TraceActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Tether/Features/MainLayout/Stores/TraceStore+TraceActions.swift"; sourceTree = SOURCE_ROOT; };
 		C0D800000000000000000018 /* Tether/Features/MainLayout/Stores/SnapshotCombiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Stores/SnapshotCombiner.swift; sourceTree = SOURCE_ROOT; };
 		C0D800000000000000000019 /* Tether/Features/MainLayout/Layout/MainThreePaneWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Layout/MainThreePaneWorkspace.swift; sourceTree = SOURCE_ROOT; };
 		C0D80000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Layout/MainThreePaneActions.swift; sourceTree = SOURCE_ROOT; };
@@ -172,9 +172,9 @@
 		C0E100000000000000000008 /* Tether/Features/Settings/Panes/ExtensionsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Settings/Panes/ExtensionsSettingsView.swift; sourceTree = SOURCE_ROOT; };
 		C0E100000000000000000009 /* Tether/Features/Settings/Panes/DeveloperSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Settings/Panes/DeveloperSettingsView.swift; sourceTree = SOURCE_ROOT; };
 		C0F100000000000000000001 /* Tether/Features/Graph/Nodes/NodeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Graph/Nodes/NodeSource.swift; sourceTree = SOURCE_ROOT; };
-		C0F100000000000000000002 /* Tether/Features/MainLayout/Stores/SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Stores/SessionStore.swift; sourceTree = SOURCE_ROOT; };
-		C0F100000000000000000003 /* Tether/Features/Sidebar/Chrome/SessionSidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Sidebar/Chrome/SessionSidebarView.swift; sourceTree = SOURCE_ROOT; };
 		C0F100000000000000000004 /* Tether/Features/Inspector/Replay/NonDeterminismResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Inspector/Replay/NonDeterminismResultsView.swift; sourceTree = SOURCE_ROOT; };
+		C0F100000000000000000005 /* Tether/Features/Update/UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Update/UpdateChecker.swift; sourceTree = SOURCE_ROOT; };
+		C0F100000000000000000006 /* Tether/Features/Update/UpdateBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Update/UpdateBannerView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -257,7 +257,7 @@
 				C0D800000000000000000014 /* Tether/Features/Inspector/Replay/InspectorReplayFooter.swift */,
 				C0D800000000000000000015 /* Tether/Features/Inspector/Replay/TimeTravelButtonStyle.swift */,
 				C0D800000000000000000016 /* Tether/Features/MainLayout/Connection/ProxyConnectionStatus.swift */,
-				C0D800000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+Sessions.swift */,
+				C0D800000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+TraceActions.swift */,
 				C0D800000000000000000018 /* Tether/Features/MainLayout/Stores/SnapshotCombiner.swift */,
 				C0D800000000000000000019 /* Tether/Features/MainLayout/Layout/MainThreePaneWorkspace.swift */,
 				C0D80000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift */,
@@ -266,7 +266,6 @@
 				C0D80000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift */,
 				C0D80000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift */,
 				C0D80000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift */,
-				C0F100000000000000000002 /* Tether/Features/MainLayout/Stores/SessionStore.swift */,
 				C0D800000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift */,
 				C0D800000000000000000021 /* Tether/Features/Settings/Shell/SettingsSidebar.swift */,
 				C0D800000000000000000022 /* Tether/Features/Settings/Shell/SettingsPaneButton.swift */,
@@ -285,8 +284,9 @@
 				C0D80000000000000000002F /* Tether/Features/Sidebar/Calls/CallRowParts.swift */,
 				C0D800000000000000000030 /* Tether/Features/Sidebar/Chrome/SidebarFooter.swift */,
 				C0D800000000000000000031 /* Tether/Features/Sidebar/Chrome/ProxyConnectionStatus+Sidebar.swift */,
-				C0F100000000000000000003 /* Tether/Features/Sidebar/Chrome/SessionSidebarView.swift */,
 				C0F100000000000000000004 /* Tether/Features/Inspector/Replay/NonDeterminismResultsView.swift */,
+				C0F100000000000000000005 /* Tether/Features/Update/UpdateChecker.swift */,
+				C0F100000000000000000006 /* Tether/Features/Update/UpdateBannerView.swift */,
 				C0D800000000000000000032 /* Tether/Features/Welcome/WelcomeBranding.swift */,
 				C0D800000000000000000033 /* Tether/Features/Welcome/WelcomeFeatureGrid.swift */,
 				C0D800000000000000000034 /* Tether/Features/Welcome/WelcomeFooter.swift */,
@@ -428,7 +428,7 @@
 				C0D900000000000000000014 /* Tether/Features/Inspector/Replay/InspectorReplayFooter.swift in Sources */,
 				C0D900000000000000000015 /* Tether/Features/Inspector/Replay/TimeTravelButtonStyle.swift in Sources */,
 				C0D900000000000000000016 /* Tether/Features/MainLayout/Connection/ProxyConnectionStatus.swift in Sources */,
-				C0D900000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+Sessions.swift in Sources */,
+				C0D900000000000000000017 /* Tether/Features/MainLayout/Stores/TraceStore+TraceActions.swift in Sources */,
 				C0D900000000000000000018 /* Tether/Features/MainLayout/Stores/SnapshotCombiner.swift in Sources */,
 				C0D900000000000000000019 /* Tether/Features/MainLayout/Layout/MainThreePaneWorkspace.swift in Sources */,
 				C0D90000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift in Sources */,
@@ -437,7 +437,6 @@
 				C0D90000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift in Sources */,
 				C0D90000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift in Sources */,
 				C0D90000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift in Sources */,
-				C0F000000000000000000002 /* Tether/Features/MainLayout/Stores/SessionStore.swift in Sources */,
 				C0D900000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift in Sources */,
 				C0D900000000000000000021 /* Tether/Features/Settings/Shell/SettingsSidebar.swift in Sources */,
 				C0D900000000000000000022 /* Tether/Features/Settings/Shell/SettingsPaneButton.swift in Sources */,
@@ -456,8 +455,9 @@
 				C0D90000000000000000002F /* Tether/Features/Sidebar/Calls/CallRowParts.swift in Sources */,
 				C0D900000000000000000030 /* Tether/Features/Sidebar/Chrome/SidebarFooter.swift in Sources */,
 				C0D900000000000000000031 /* Tether/Features/Sidebar/Chrome/ProxyConnectionStatus+Sidebar.swift in Sources */,
-				C0F000000000000000000003 /* Tether/Features/Sidebar/Chrome/SessionSidebarView.swift in Sources */,
 				C0F000000000000000000004 /* Tether/Features/Inspector/Replay/NonDeterminismResultsView.swift in Sources */,
+				C0F000000000000000000005 /* Tether/Features/Update/UpdateChecker.swift in Sources */,
+				C0F000000000000000000006 /* Tether/Features/Update/UpdateBannerView.swift in Sources */,
 				C0D900000000000000000032 /* Tether/Features/Welcome/WelcomeBranding.swift in Sources */,
 				C0D900000000000000000033 /* Tether/Features/Welcome/WelcomeFeatureGrid.swift in Sources */,
 				C0D900000000000000000034 /* Tether/Features/Welcome/WelcomeFooter.swift in Sources */,

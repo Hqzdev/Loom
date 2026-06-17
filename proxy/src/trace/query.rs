@@ -1,4 +1,4 @@
-//! Read path: assemble `TraceSnapshot` / `SessionListDto` from stored rows.
+//! Read path: assemble `TraceSnapshot` from stored rows.
 
 use std::{
     collections::HashMap,
@@ -7,48 +7,28 @@ use std::{
 
 use rusqlite::Connection;
 
-use tether_domain::{AgentNodeDto, SessionListDto, TraceSnapshot};
+use tether_domain::{AgentNodeDto, TraceSnapshot};
 
 use super::node::row_to_node;
-use super::sessions::{find_session, latest_session, session_to_dto};
 use super::store_row::TraceRow;
 
-/// Loads the latest 500 calls for a session (the current one when unspecified)
-/// and lays them out as graph nodes, normalizing the latency bars.
-pub(super) fn fetch_snapshot(
-    db: &Arc<Mutex<Connection>>,
-    requested_session_id: Option<String>,
-) -> rusqlite::Result<TraceSnapshot> {
-    fetch_snapshot_with_payload(db, requested_session_id, true)
+/// Loads recent calls and lays them out as graph nodes, normalizing latency bars.
+pub(super) fn fetch_snapshot(db: &Arc<Mutex<Connection>>) -> rusqlite::Result<TraceSnapshot> {
+    fetch_snapshot_with_payload(db, true)
 }
 
 /// Loads a lightweight snapshot for graph polling without large prompt/response payloads.
 pub(super) fn fetch_snapshot_summary(
     db: &Arc<Mutex<Connection>>,
-    requested_session_id: Option<String>,
 ) -> rusqlite::Result<TraceSnapshot> {
-    fetch_snapshot_with_payload(db, requested_session_id, false)
+    fetch_snapshot_with_payload(db, false)
 }
 
 fn fetch_snapshot_with_payload(
     db: &Arc<Mutex<Connection>>,
-    requested_session_id: Option<String>,
     include_payload: bool,
 ) -> rusqlite::Result<TraceSnapshot> {
     let conn = db.lock().expect("trace database lock poisoned");
-    let session = match requested_session_id {
-        Some(session_id) => {
-            Some(find_session(&conn, &session_id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)?)
-        }
-        None => latest_session(&conn)?,
-    };
-    let Some(session) = session else {
-        return Ok(TraceSnapshot {
-            session: None,
-            nodes: Vec::new(),
-            stale_node_ids: Vec::new(),
-        });
-    };
     let payload_columns = if include_payload {
         "prompt_system, prompt_user, response_text, response_language,
          error_code, error_message, error_detail, tool_use_ids, context_inputs"
@@ -61,15 +41,15 @@ fn fetch_snapshot_with_payload(
                 latency_ms, request_id, {payload_columns}, tokens_in, tokens_out,
                 cost, temperature, trace_id, parent_span_id, input_hash, stale
          FROM trace_calls
-         WHERE session_id = ?1
          ORDER BY created_at ASC
-         LIMIT 500"
+         LIMIT 5000"
     );
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt
-        .query_map([session.id.as_str()], trace_row_from_query)?
+        .query_map([], trace_row_from_query)?
         .collect::<rusqlite::Result<Vec<_>>>()?;
 
+    let rows = collapse_rows_to_requests(rows);
     let max_latency = rows
         .iter()
         .map(|row| row.latency_ms)
@@ -84,14 +64,10 @@ fn fetch_snapshot_with_payload(
         .collect();
     let nodes = rows
         .into_iter()
-        .map(|row| {
-            let depth = depths.get(&row.id).copied().unwrap_or(0);
-            row_to_node(depth, row, max_latency)
-        })
+        .map(|row| row_to_node(depths.get(&row.id).copied().unwrap_or(0), row, max_latency))
         .collect();
 
     Ok(TraceSnapshot {
-        session: Some(session),
         nodes,
         stale_node_ids,
     })
@@ -110,15 +86,16 @@ pub(super) fn fetch_node_detail(
                 context_inputs, tokens_in, tokens_out, cost, temperature, trace_id,
                 parent_span_id, input_hash, stale
          FROM trace_calls
-         WHERE id = ?1
-         LIMIT 1",
+         WHERE id = ?1 OR trace_id = ?1
+         ORDER BY created_at ASC",
     )?;
-    let mut rows = stmt.query([node_id.as_str()])?;
-    let Some(row) = rows.next()? else {
+    let rows = stmt
+        .query_map([node_id.as_str()], trace_row_from_query)?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    let Some(trace_row) = collapse_rows_to_requests(rows).into_iter().next() else {
         return Ok(None);
     };
 
-    let trace_row = trace_row_from_query(row)?;
     let max_latency = trace_row.latency_ms.max(1);
     Ok(Some(row_to_node(0, trace_row, max_latency)))
 }
@@ -186,39 +163,92 @@ fn compute_depths(rows: &[TraceRow]) -> HashMap<String, i64> {
     depths
 }
 
-/// Lists all live sessions (newest first) with their call counts, plus the id
-/// of the current one. Soft-deleted sessions are excluded.
-pub(super) fn fetch_sessions(
-    db: &Arc<Mutex<Connection>>,
-    active_session_id: Option<String>,
-) -> rusqlite::Result<SessionListDto> {
-    let conn = db.lock().expect("trace database lock poisoned");
-    let current = match active_session_id {
-        Some(session_id) => find_session(&conn, &session_id)?.or(latest_session(&conn)?),
-        None => latest_session(&conn)?,
-    };
-    let mut stmt = conn.prepare(
-        "SELECT s.id, s.created_at, s.name, COUNT(t.id)
-         FROM sessions s
-         LEFT JOIN trace_calls t ON t.session_id = s.id
-         WHERE s.deleted_at IS NULL
-         GROUP BY s.id, s.created_at, s.name
-         ORDER BY s.created_at DESC",
-    )?;
-    let sessions = stmt
-        .query_map([], |row| {
-            let mut dto = session_to_dto(
-                row.get::<_, String>(0)?,
-                row.get::<_, i64>(1)?,
-                row.get::<_, String>(2)?,
-            );
-            dto.call_count = row.get::<_, i64>(3)?;
-            Ok(dto)
-        })?
-        .collect::<rusqlite::Result<Vec<_>>>()?;
+/// Collapses provider-level calls into user-request nodes. A multi-step agent
+/// run shares one `trace_id`, so the UI shows it as one chat-like request even
+/// when the proxy captured several underlying LLM/tool calls.
+fn collapse_rows_to_requests(rows: Vec<TraceRow>) -> Vec<TraceRow> {
+    let mut groups: Vec<RequestGroup> = Vec::new();
 
-    Ok(SessionListDto {
-        sessions,
-        current_session_id: current.map(|session| session.id),
-    })
+    for row in rows {
+        let key = request_key(&row);
+        if let Some(group) = groups.iter_mut().find(|group| group.key == key) {
+            group.merge(row);
+        } else {
+            groups.push(RequestGroup::new(key, row));
+        }
+    }
+
+    groups.into_iter().map(RequestGroup::finish).collect()
+}
+
+fn request_key(row: &TraceRow) -> String {
+    if row.trace_id.is_empty() {
+        row.id.clone()
+    } else {
+        row.trace_id.clone()
+    }
+}
+
+struct RequestGroup {
+    key: String,
+    row: TraceRow,
+    raw_call_count: usize,
+}
+
+impl RequestGroup {
+    fn new(key: String, mut row: TraceRow) -> Self {
+        if row.trace_id.is_empty() {
+            row.trace_id = key.clone();
+        }
+        row.parent_span_id = None;
+        Self {
+            key,
+            row,
+            raw_call_count: 1,
+        }
+    }
+
+    fn merge(&mut self, row: TraceRow) {
+        self.raw_call_count += 1;
+        self.row.latency_ms += row.latency_ms.max(0);
+        self.row.tokens_in += row.tokens_in.max(0);
+        self.row.tokens_out += row.tokens_out.max(0);
+        self.row.cost = sum_costs(&self.row.cost, &row.cost);
+        self.row.stale = self.row.stale || row.stale;
+
+        if !row.response_text.is_empty() {
+            self.row.response_text = row.response_text;
+            self.row.response_language = row.response_language;
+        }
+
+        if row.status_code < 200 || row.status_code > 299 {
+            self.row.status_code = row.status_code;
+            self.row.error_code = row.error_code;
+            self.row.error_message = row.error_message;
+            self.row.error_detail = row.error_detail;
+        }
+
+        if self.row.cache_status == "hit" && row.cache_status != "hit" {
+            self.row.cache_status = row.cache_status;
+        }
+    }
+
+    fn finish(mut self) -> TraceRow {
+        self.row.id = self.key.clone();
+        self.row.trace_id = self.key;
+        self.row.parent_span_id = None;
+        if self.raw_call_count > 1 {
+            self.row.path = format!("request ({} calls)", self.raw_call_count);
+        }
+        self.row
+    }
+}
+
+fn sum_costs(lhs: &str, rhs: &str) -> String {
+    let total = parse_cost(lhs) + parse_cost(rhs);
+    format!("${total:.4}")
+}
+
+fn parse_cost(value: &str) -> f64 {
+    value.trim_start_matches('$').parse::<f64>().unwrap_or(0.0)
 }

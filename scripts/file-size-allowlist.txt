@@ -7,7 +7,7 @@
 
 # Phase 2 target — Rust proxy god files (DONE)
 # proxy/src/trace.rs — DONE: split into src/trace/{capture,summarize,store,
-#   sessions,query,node,schema,routes,text}.rs
+#   query,node,schema,routes,text}.rs
 # proxy/src/main.rs — DONE: split into src/gateway/* + thin composition root.
 # proxy/src/auth/mod.rs — DONE: split into src/auth/{context,jwt,password,
 #   routes,types,google,oauth}.rs.
@@ -26,4 +26,3 @@ ui/Tether/Features/Graph/Viewport/GraphGeometry.swift
 ui/Tether/Features/Inspector/Content/InspectorBody.swift
 ui/Tether/Features/MainLayout/Layout/MainThreePaneActions.swift
 ui/Tether/Features/MainLayout/Stores/TraceStore.swift
-ui/Tether/Features/Sidebar/Chrome/SessionSidebarView.swift

@@ -30,54 +30,10 @@
         }
       }
     },
-    "/api/sessions": {
-      "get": {
-        "summary": "List trace sessions",
-        "tags": ["sessions"],
-        "responses": {
-          "200": {
-            "description": "Known sessions and current session id",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionList"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a trace session",
-        "tags": ["sessions"],
-        "responses": {
-          "201": {
-            "description": "Created session",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TraceSession"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/traces/current": {
       "get": {
         "summary": "Read the current trace graph",
         "tags": ["traces"],
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "UI-readable trace snapshot",
@@ -92,7 +48,7 @@
         }
       },
       "delete": {
-        "summary": "Clear all traces and reset the live session",
+        "summary": "Clear all traces",
         "tags": ["traces"],
         "responses": {
           "204": {
@@ -467,48 +423,10 @@
       }
     },
     "schemas": {
-      "TraceSession": {
-        "type": "object",
-        "required": ["id", "title", "trigger", "started_at"],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "trigger": {
-            "type": "string"
-          },
-          "started_at": {
-            "type": "string"
-          }
-        }
-      },
-      "SessionList": {
-        "type": "object",
-        "required": ["sessions"],
-        "properties": {
-          "sessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TraceSession"
-            }
-          },
-          "current_session_id": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
       "TraceSnapshot": {
         "type": "object",
         "required": ["nodes", "stale_node_ids"],
         "properties": {
-          "session": {
-            "$ref": "#/components/schemas/TraceSession",
-            "nullable": true
-          },
           "nodes": {
             "type": "array",
             "items": {

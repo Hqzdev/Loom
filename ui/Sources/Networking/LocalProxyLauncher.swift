@@ -118,8 +118,8 @@ public final class LocalProxyLauncher {
         return directory
     }
 
-    /// Persistent on-device location for the session/trace database. Application
-    /// Support is backed up and never purged by macOS, so session history survives
+    /// Persistent on-device location for the trace database. Application
+    /// Support is backed up and never purged by macOS, so trace history survives
     /// the low-disk conditions that can silently wipe the caches directory.
     private static func databaseURL() throws -> URL {
         let root = try FileManager.default.url(
@@ -136,7 +136,7 @@ public final class LocalProxyLauncher {
     }
 
     /// Moves a database left in the volatile caches directory by older builds into
-    /// the persistent store, preserving previously captured sessions and traces.
+    /// the persistent store, preserving previously captured traces.
     private static func migrateLegacyDatabaseIfNeeded(to destination: URL) {
         let manager = FileManager.default
         guard !manager.fileExists(atPath: destination.path),

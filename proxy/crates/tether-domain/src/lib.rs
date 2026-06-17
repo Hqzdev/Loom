@@ -12,37 +12,12 @@
 use serde::Serialize;
 use serde_json::Value;
 
-/// A full trace view for one session: the session header plus its ordered nodes.
+/// A full trace view: ordered captured nodes plus replay invalidation state.
 #[derive(Serialize)]
 pub struct TraceSnapshot {
-    pub session: Option<TraceSessionDto>,
     pub nodes: Vec<AgentNodeDto>,
     /// Spans whose upstream output was edited and whose descendants need replay.
     pub stale_node_ids: Vec<String>,
-}
-
-/// Metadata describing a single capture session.
-///
-/// `title` and `name` carry the same value; `title` is retained for the original
-/// session-picker client while `name` matches the session-history vocabulary.
-/// `created_at` is epoch millis (the numeric companion to `started_at`), and
-/// `call_count` is populated only by the session-list endpoint (0 elsewhere).
-#[derive(Clone, Serialize)]
-pub struct TraceSessionDto {
-    pub id: String,
-    pub title: String,
-    pub name: String,
-    pub trigger: String,
-    pub started_at: String,
-    pub created_at: i64,
-    pub call_count: i64,
-}
-
-/// The list of known sessions and which one is currently active.
-#[derive(Serialize)]
-pub struct SessionListDto {
-    pub sessions: Vec<TraceSessionDto>,
-    pub current_session_id: Option<String>,
 }
 
 /// One captured LLM call, laid out for the UI's trace graph.

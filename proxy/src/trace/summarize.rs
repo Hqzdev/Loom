@@ -95,6 +95,16 @@ pub(super) fn extract_tool_use_ids(value: &Value) -> Vec<String> {
         }
     }
 
+    if let Some(output) = value.get("output").and_then(Value::as_array) {
+        for item in output {
+            if item.get("type").and_then(Value::as_str) == Some("function_call")
+                && let Some(id) = item.get("call_id").and_then(Value::as_str)
+            {
+                ids.push(id.to_string());
+            }
+        }
+    }
+
     ids
 }
 
@@ -147,4 +157,27 @@ fn extract_response_text(value: &Value) -> Option<String> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::extract_tool_use_ids;
+
+    #[test]
+    fn extracts_openai_responses_function_call_ids() {
+        let value = json!({
+            "output": [
+                {
+                    "type": "function_call",
+                    "call_id": "call_123",
+                    "name": "shell",
+                    "arguments": "{}"
+                }
+            ]
+        });
+
+        assert_eq!(extract_tool_use_ids(&value), vec!["call_123"]);
+    }
 }

@@ -14,25 +14,19 @@ extension CodexLogObserver {
 
         let events = try responseEvents(for: thread.id, from: CodexDatabase.logsPath, afterLogId: baselineLogId)
         let nodes = makeNodes(from: events, thread: thread)
-        let session = TraceSession(
-            id: thread.id,
-            title: title(for: thread),
-            trigger: "Terminal Codex",
-            startedAt: formatClock(seconds: thread.createdAt ?? thread.updatedAt ?? 0)
-        )
 
-        return TraceSnapshot(session: session, nodes: nodes)
+        return TraceSnapshot(nodes: nodes)
     }
 
     /// Returns a compact user-facing title for a Codex thread.
     nonisolated static func title(for thread: CodexThreadRow) -> String {
-        let source = thread.title ?? thread.preview ?? thread.firstUserMessage ?? "Codex Terminal Session"
+        let source = thread.title ?? thread.preview ?? thread.firstUserMessage ?? "Codex Terminal Run"
         return truncate(firstLine(source), limit: 86)
     }
 
     /// Returns the prompt text shown in the inspector for a Codex thread.
     nonisolated static func promptText(for thread: CodexThreadRow) -> String {
-        let prompt = thread.preview ?? thread.firstUserMessage ?? thread.title ?? "Terminal Codex session"
+        let prompt = thread.preview ?? thread.firstUserMessage ?? thread.title ?? "Terminal Codex run"
         return truncate(prompt.trimmingCharacters(in: .whitespacesAndNewlines), limit: 4_000)
     }
 }

@@ -21,7 +21,7 @@ Incremental and **always-shippable**. Every phase ends with the app building and
 - **Exit:** `cargo build` + smoke pass; models/storage/crypto now live in their own crates.
 
 ## Phase 2 — Split god files into services (logic preserved)  · L
-- Carve `tether-cache`, `tether-trace`, `tether-sessions`, `tether-auth`, `tether-settings`,
+- Carve `tether-cache`, `tether-trace`, `tether-auth`, `tether-settings`,
   `tether-gateway`, `tether-http` per [03](./03-service-catalog.md), applying the file-split
   plan in [04](./04-code-organization.md). Each service implements its `tether-contracts` trait.
 - Handlers stop touching SQL; they call traits backed by `tether-storage` repos.

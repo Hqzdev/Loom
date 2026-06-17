@@ -31,7 +31,7 @@ struct ExtensionsSettingsView: View {
         SettingsSection("Terminal Codex", palette: palette) {
             SettingsToggleRow(
                 "Enable Codex integration",
-                subtitle: "Automatically observe Codex CLI sessions from your local databases.",
+                subtitle: "Automatically observe Codex CLI runs from your local databases.",
                 isOn: $preferences.codexIntegrationEnabled,
                 palette: palette
             )

@@ -17,8 +17,7 @@ pub(crate) fn record_response(
     db: &Arc<Mutex<Connection>>,
     capture: &TraceCapture,
     response: &TraceResponse,
-    active_session: Option<&str>,
-) -> Option<String> {
+) {
     let summary = summarize_response(&response.content_type, &response.body);
     let is_error = !(200..=299).contains(&response.status_code);
     let status = if response.cache_status == "hit" {
@@ -78,7 +77,7 @@ pub(crate) fn record_response(
         tool_result_ids: capture.tool_result_ids.clone(),
     };
 
-    insert_trace_row(db, row, status, active_session)
+    insert_trace_row(db, row, status)
 }
 
 /// Records a failed upstream call (network error / dropped stream) as an error node.
@@ -87,8 +86,7 @@ pub(crate) fn record_upstream_error(
     capture: &TraceCapture,
     message: &str,
     latency_ms: i64,
-    active_session: Option<&str>,
-) -> Option<String> {
+) {
     let row = TraceRow {
         id: capture.id.clone(),
         created_at: capture.created_at,
@@ -122,5 +120,5 @@ pub(crate) fn record_upstream_error(
         tool_result_ids: capture.tool_result_ids.clone(),
     };
 
-    insert_trace_row(db, row, "error", active_session)
+    insert_trace_row(db, row, "error")
 }

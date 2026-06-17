@@ -18,9 +18,9 @@ extension TraceStore {
     }
 
     /// Loads a proxy trace snapshot without throwing through async-let boundaries.
-    func loadProxySnapshot(sessionId: TraceSession.ID?) async -> Result<TraceSnapshot, Error> {
+    func loadProxySnapshot() async -> Result<TraceSnapshot, Error> {
         do {
-            return .success(try await client.currentTraceSummary(sessionId: sessionId))
+            return .success(try await client.currentTraceSummary())
         } catch {
             return .failure(error)
         }
@@ -35,15 +35,11 @@ extension TraceStore {
         }
     }
 
-    /// Clears proxy traces, returns to the live view, and hides previously observed
-    /// Codex events until new activity arrives.
+    /// Clears proxy traces and hides previously observed Codex events until new
+    /// activity arrives.
     func clearAllTraces() async {
         codexBaselineLogId = try? await codexObserver.latestResponseEventId()
         resetDeferredTraceUpdates()
-        selectedSessionId = nil
-        historyNodeIds = []
-        sessionNodes = []
-        session = nil
         nodes = []
 
         do {

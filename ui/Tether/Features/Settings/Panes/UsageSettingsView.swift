@@ -7,13 +7,12 @@ import UI
 struct UsageSettingsView: View {
     let palette: AgentTracePalette
     @EnvironmentObject private var traceStore: TraceStore
-    @EnvironmentObject private var sessionStore: SessionStore
 
     @State private var statusMessage: String?
     @State private var statusIsError = false
 
     private var stats: UsageStats {
-        UsageStats(sessionCount: sessionStore.sessions.count, nodes: traceStore.sessionNodes + traceStore.nodes)
+        UsageStats(nodes: traceStore.nodes)
     }
 
     var body: some View {
@@ -40,7 +39,6 @@ struct UsageSettingsView: View {
 
     private var overviewSection: some View {
         SettingsSection("Overview", palette: palette) {
-            SettingsValueRow("Sessions", value: "\(stats.sessionCount)", palette: palette)
             SettingsValueRow("Total calls", value: "\(stats.nodeCount)", palette: palette)
             SettingsValueRow("Errors", value: "\(stats.errorCount)", palette: palette)
             SettingsValueRow("Cache hits", value: "\(stats.cachedCount)", palette: palette)
@@ -103,7 +101,6 @@ struct UsageSettingsView: View {
 
 /// Aggregated, display-ready usage metrics derived from captured trace nodes.
 private struct UsageStats {
-    let sessionCount: Int
     let nodeCount: Int
     let errorCount: Int
     let cachedCount: Int
@@ -127,8 +124,7 @@ private struct UsageStats {
         return String(format: "$%.4f", totalCost)
     }
 
-    init(sessionCount: Int, nodes: [AgentNode]) {
-        self.sessionCount = sessionCount
+    init(nodes: [AgentNode]) {
         nodeCount = nodes.count
         errorCount = nodes.filter { $0.status == .error }.count
         cachedCount = nodes.filter { $0.status == .cached }.count

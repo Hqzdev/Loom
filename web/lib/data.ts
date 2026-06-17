@@ -222,7 +222,7 @@ export const NODES: TraceNode[] = [
 
   at LocalLlamaProvider.generate (providers/local.ts:214)
   at AgentStep.run (engine/step.ts:88)
-  at TraceSession.replay (engine/session.ts:301)
+  at TraceReplay.run (engine/replay.ts:301)
 
 ✗ stream aborted — 0 tokens emitted
 ✗ ctx_window_exceeded: 8334 / 8192

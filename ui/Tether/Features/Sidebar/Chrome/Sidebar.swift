@@ -2,19 +2,13 @@ import Core
 import SwiftUI
 import UI
 
-/// Left pane listing proxy status, the session-history list, filters, and captured calls.
+/// Left pane listing proxy status, filters, and captured calls.
 struct Sidebar: View {
     let nodes: [AgentNode]
     let filteredNodes: [AgentNode]
     let selectedNodeId: AgentNode.ID?
     @Binding var searchText: String
     let proxyStatus: ProxyConnectionStatus
-    let sessions: [Session]
-    let activeSessionId: Session.ID?
-    let liveSessionId: Session.ID?
-    let onSelectSession: (Session.ID) -> Void
-    let onNewSession: () -> Void
-    let onDeleteSession: (Session.ID) -> Void
     let onSelect: (AgentNode) -> Void
     let onShowSettings: () -> Void
     let palette: AgentTracePalette
@@ -22,16 +16,6 @@ struct Sidebar: View {
     var body: some View {
         VStack(spacing: 0) {
             SidebarStatusHeader(proxyStatus: proxyStatus, palette: palette)
-
-            SessionSidebarView(
-                sessions: sessions,
-                activeSessionId: activeSessionId,
-                liveSessionId: liveSessionId,
-                onSelectSession: onSelectSession,
-                onNewSession: onNewSession,
-                onDeleteSession: onDeleteSession,
-                palette: palette
-            )
 
             SidebarSearchField(searchText: $searchText, palette: palette)
             SidebarSectionHeader(title: "Calls", detail: "\(filteredNodes.count) of \(nodes.count)", palette: palette)

@@ -56,10 +56,10 @@ extension CodexLogObserver {
             responses.append(active)
         }
 
-        let visibleResponses = Array(responses.suffix(12))
-        let maxLatency = max(visibleResponses.map(\.latencyMs).max() ?? 0, 1)
+        // Surface every observed Codex response, not just the most recent ones.
+        let maxLatency = max(responses.map(\.latencyMs).max() ?? 0, 1)
 
-        return visibleResponses.enumerated().map { index, draft in
+        return responses.enumerated().map { index, draft in
             makeNode(from: draft, index: index, maxLatency: maxLatency, thread: thread)
         }
     }
@@ -93,7 +93,7 @@ extension CodexLogObserver {
             temperature: nil,
             status: draft.status,
             prompt: AgentPrompt(
-                system: "Observed from ~/.codex local logs. No proxy configuration is required for Terminal Codex sessions.",
+                system: "Observed from ~/.codex local logs. No proxy configuration is required for Terminal Codex runs.",
                 user: promptText(for: thread)
             ),
             response: AgentResponse(language: .text, text: responseText),

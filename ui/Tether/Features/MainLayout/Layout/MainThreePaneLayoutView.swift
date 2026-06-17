@@ -6,7 +6,6 @@ import UI
 /// Main desktop workspace containing sidebar, graph canvas, inspector, and settings overlay.
 struct MainThreePaneLayoutView: View {
     @StateObject var traceStore = TraceStore()
-    @StateObject var sessionStore = SessionStore()
     @State var selectedNodeId: AgentNode.ID?
     @State var inspectorTab: InspectorTab = .context
     @State var searchText = ""
@@ -23,35 +22,27 @@ struct MainThreePaneLayoutView: View {
         AgentTracePalette(light: true)
     }
 
-    var session: TraceSession? {
-        traceStore.session
-    }
-
-    /// Read-only history cluster (a loaded session's past calls), provider-filtered.
-    var historyNodes: [AgentNode] {
-        traceStore.sessionNodes.filter { preferences.capturesProvider(of: $0) }
-    }
-
-    /// Live cluster: calls captured in the current view, provider-filtered.
-    var liveNodes: [AgentNode] {
+    /// Captured calls, provider-filtered.
+    var nodes: [AgentNode] {
         traceStore.nodes.filter { preferences.capturesProvider(of: $0) }
     }
 
-    /// History-first ordered node array consumed by the graph.
-    var nodes: [AgentNode] {
-        historyNodes + liveNodes
+    /// Historical trace groups are removed; all nodes belong to the single live stream.
+    var historyCount: Int {
+        0
     }
 
-    /// Number of leading history nodes, marking the history/live cluster split.
-    var historyCount: Int {
-        historyNodes.count
+    /// Nodes for the sidebar Calls list — the same set shown in the graph for the
+    /// current view, so the count never disagrees with what's on the canvas.
+    var callListNodes: [AgentNode] {
+        nodes
     }
 
     var filteredNodes: [AgentNode] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return nodes }
+        guard !query.isEmpty else { return callListNodes }
 
-        return nodes.filter { node in
+        return callListNodes.filter { node in
             node.stepName.localizedCaseInsensitiveContains(query)
                 || node.agentName.localizedCaseInsensitiveContains(query)
                 || node.model.localizedCaseInsensitiveContains(query)
@@ -79,7 +70,7 @@ struct MainThreePaneLayoutView: View {
                 StageBackground(palette: palette)
 
                 VStack(spacing: 0) {
-                    TitleBar(session: session, palette: palette)
+                    TitleBar(palette: palette)
                     workspace(layout: layout, size: geometry.size)
                         .workspaceSurface(layout: layout, palette: palette)
                 }
@@ -105,23 +96,16 @@ struct MainThreePaneLayoutView: View {
         }
         .ignoresSafeArea()
         .environmentObject(traceStore)
-        .environmentObject(sessionStore)
         .preferredColorScheme(preferences.appearance.preferredColorScheme)
         .frame(minWidth: 800, minHeight: 520)
         .onAppear {
             _ = LocalProxyLauncher.shared.startIfAvailable()
-            sessionStore.attach(traceStore)
             traceStore.startPolling()
-            sessionStore.startPolling()
         }
         .onDisappear {
             traceStore.stopPolling()
-            sessionStore.stopPolling()
         }
         .onChange(of: traceStore.nodes) { _, _ in
-            syncSelectedNode(with: nodes)
-        }
-        .onChange(of: traceStore.sessionNodes) { _, _ in
             syncSelectedNode(with: nodes)
         }
         .task(id: selectedNode?.id) {
@@ -129,7 +113,7 @@ struct MainThreePaneLayoutView: View {
             await traceStore.loadNodeDetailIfNeeded(selectedNodeId)
         }
         .onReceive(NotificationCenter.default.publisher(for: .agentTraceNewSession)) { _ in
-            startNewSession()
+            resetTransientSelection()
         }
         .onReceive(NotificationCenter.default.publisher(for: .agentTraceExportTraces)) { _ in
             exportTraces()
@@ -171,7 +155,7 @@ struct MainThreePaneLayoutView: View {
 
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This permanently deletes every stored session and trace and hides existing Terminal Codex events until new activity arrives. This cannot be undone.")
+            Text("This permanently deletes every stored trace and hides existing Terminal Codex events until new activity arrives. This cannot be undone.")
         }
         .sheet(isPresented: $showingConnectionHelp) {
             ConnectionHelpSheet()

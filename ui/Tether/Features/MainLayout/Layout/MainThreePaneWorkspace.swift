@@ -52,17 +52,11 @@ extension MainThreePaneLayoutView {
     /// Builds the left sidebar pane.
     func sidebarPane() -> some View {
         Sidebar(
-            nodes: nodes,
+            nodes: callListNodes,
             filteredNodes: filteredNodes,
             selectedNodeId: selectedNode?.id,
             searchText: $searchText,
             proxyStatus: traceStore.proxyStatus,
-            sessions: sessionStore.sessions,
-            activeSessionId: sessionStore.activeSessionId,
-            liveSessionId: sessionStore.liveSessionId,
-            onSelectSession: selectSession,
-            onNewSession: startNewSession,
-            onDeleteSession: deleteSession,
             onSelect: { selectedNodeId = $0.id },
             onShowSettings: {
                 withAnimation(.smooth(duration: 0.16)) {
@@ -76,7 +70,6 @@ extension MainThreePaneLayoutView {
     /// Builds the center graph pane.
     func graphPane() -> some View {
         GraphPane(
-            session: session,
             nodes: nodes,
             historyCount: historyCount,
             selectedNode: selectedNode,

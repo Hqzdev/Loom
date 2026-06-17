@@ -6,7 +6,6 @@ This folder contains the committed OpenAPI contract served by the proxy at
 ## Endpoint groups
 
 - `GET /openapi.json` — returns `openapi.json`.
-- `/api/sessions` — list and create trace sessions.
 - `/api/traces/current` — read or clear the UI-readable trace graph.
 - `/api/traces/{id}/output` — edit a node response and mark descendants stale.
 - `/api/traces/{id}/downstream` — preview descendants affected by a node edit.

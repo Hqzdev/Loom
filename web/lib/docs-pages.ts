@@ -427,10 +427,10 @@ export const DOCS_PAGES: DocsPage[] = [
           {
             kind: "list",
             items: [
-              "MainLayout owns polling, snapshot merging, session actions, and export helpers.",
+              "MainLayout owns polling, snapshot merging, trace actions, and export helpers.",
               "Graph renders nodes, anchors, connections, gestures, zoom, and drag state.",
               "Inspector renders prompt, response, metadata, error, and replay controls.",
-              "Sidebar renders search, sessions, call rows, status, and settings entry points.",
+              "Sidebar renders search, call rows, status, and settings entry points.",
               "Settings owns proxy URLs, provider keys, cache clearing, and proxy restart actions.",
             ],
           },
@@ -482,7 +482,7 @@ export const DOCS_PAGES: DocsPage[] = [
     title: "API reference",
     category: "Reference",
     description:
-      "The local proxy exposes trace, session, replay, settings, auth, and OpenAPI routes for the desktop app.",
+      "The local proxy exposes trace, replay, settings, auth, and OpenAPI routes for the desktop app.",
     sections: [
       {
         title: "Trace routes",
@@ -493,8 +493,6 @@ export const DOCS_PAGES: DocsPage[] = [
             rows: [
               ["GET /api/trace", "Read the current trace snapshot."],
               ["DELETE /api/trace", "Clear captured traces."],
-              ["GET /api/trace/sessions", "Read available trace sessions."],
-              ["POST /api/trace/sessions", "Create a fresh trace session."],
               ["POST /api/trace/:id/replay", "Replay a selected trace node."],
             ],
           },

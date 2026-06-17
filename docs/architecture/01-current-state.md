@@ -13,7 +13,7 @@ grounded in the problems it was designed to fix. For current phase status, see
  ┌──────────────────────────────────────────┐
  │  Rust proxy (Axum)  —  proxy/             │   ← the monolith we are decomposing
  │  routing · cache · trace · auth · settings│
- │  SQLite (cache, sessions, trace_calls)    │
+ │  SQLite (cache, trace_calls)              │
  └──────────────────────────────────────────┘
    ▲ REST /api/*
    │
@@ -40,7 +40,6 @@ Single binary `tether-proxy`. All concerns live in a flat `src/` with a few larg
 **HTTP surface (today):**
 
 ```
-GET    /api/sessions                      POST   /api/sessions
 GET    /api/traces/current                DELETE /api/traces/current
 DELETE /api/cache
 POST   /api/auth/oauth/google/callback    GET    /api/auth/status
@@ -50,7 +49,7 @@ POST   /api/settings/keys
 *  (fallback) → transparent proxy to OpenAI/Anthropic
 ```
 
-**Storage:** SQLite — `cache` (sha256 → response blob), `sessions`, `trace_calls`.
+**Storage:** SQLite — `cache` (sha256 → response blob), `trace_calls`.
 
 ## 1.3 App baseline — `ui/` (SwiftUI + Composable Architecture)
 
@@ -62,11 +61,10 @@ files.
 | File | Lines | Notes |
 |------|------:|-------|
 | `Networking/CodexLogObserver.swift` | 495 | split into observer facade + `Networking/Codex/*` helpers |
-| `Tether/Features/MainLayout/TraceStore.swift` | 356 | split into store, status, session operations, and snapshot combiner |
+| `Tether/Features/MainLayout/TraceStore.swift` | 356 | split into store, status, refresh operations, and snapshot combiner |
 | `Core/Models/TraceModels.swift` | 297 | replaced by one file per domain model |
 | `UI/DesignSystem/AgentTracePalette.swift` | 187 | split into palette, `LiquidGlass`, and `Color+Hex` |
 | `UI/Shared/TraceSharedViews.swift` | 183 | multiple reusable views |
-| `UI/SessionList/SessionListView.swift` | 171 | list + row + empty state |
 | `Networking/TraceAPIClient.swift` | 139 | HTTP client for all `/api` calls |
 | `Inspector/InspectorPane.swift` | ~430 | split into header, picker, body, code view, metadata, empty state, and styles |
 

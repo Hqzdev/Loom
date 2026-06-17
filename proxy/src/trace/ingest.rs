@@ -12,10 +12,6 @@ use super::store::{record_response, record_upstream_error};
 /// Default bounded channel size for in-process trace ingestion.
 pub(crate) const DEFAULT_TRACE_CHANNEL_CAPACITY: usize = 1_024;
 
-/// Shared handle to the session new traffic is currently being routed into.
-/// `None` means "fall back to the most recent session".
-pub(crate) type ActiveSession = Arc<Mutex<Option<String>>>;
-
 /// Non-blocking sink used by the proxy path to hand trace work to the worker.
 #[derive(Clone)]
 pub(crate) struct TraceSink {
@@ -72,25 +68,13 @@ impl TraceSink {
 /// Spawns the background task that persists trace events in receive order.
 pub(crate) fn spawn_ingest_worker(
     db: Arc<Mutex<Connection>>,
-    active_session: ActiveSession,
     mut rx: mpsc::Receiver<TraceEvent>,
 ) -> tokio::task::JoinHandle<()> {
     tokio::spawn(async move {
         while let Some(event) = rx.recv().await {
             let db = db.clone();
-            // Snapshot the active session per event so a mid-stream switch routes
-            // the next call without blocking the persistence worker on the lock.
-            let active = active_session.lock().ok().and_then(|guard| guard.clone());
-            let active_snapshot = active.clone();
-            match tokio::task::spawn_blocking(move || event.persist(&db, active.as_deref())).await {
-                Ok(Some(persisted_session_id)) => {
-                    if let Ok(mut guard) = active_session.lock()
-                        && *guard == active_snapshot
-                    {
-                        *guard = Some(persisted_session_id);
-                    }
-                }
-                Ok(None) => {}
+            match tokio::task::spawn_blocking(move || event.persist(&db)).await {
+                Ok(()) => {}
                 Err(error) => eprintln!("  trace ingestion worker failed: {error}"),
             }
         }
@@ -111,18 +95,15 @@ pub(crate) enum TraceEvent {
 }
 
 impl TraceEvent {
-    /// Persists one queued event using the existing blocking store functions,
-    /// routing it into `active_session` when one is set.
-    fn persist(self, db: &Arc<Mutex<Connection>>, active_session: Option<&str>) -> Option<String> {
+    /// Persists one queued event using the existing blocking store functions.
+    fn persist(self, db: &Arc<Mutex<Connection>>) {
         match self {
-            Self::Response { capture, response } => {
-                record_response(db, &capture, &response, active_session)
-            }
+            Self::Response { capture, response } => record_response(db, &capture, &response),
             Self::UpstreamError {
                 capture,
                 message,
                 latency_ms,
-            } => record_upstream_error(db, &capture, &message, latency_ms, active_session),
+            } => record_upstream_error(db, &capture, &message, latency_ms),
         }
     }
 }

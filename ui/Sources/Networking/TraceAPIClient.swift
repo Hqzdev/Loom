@@ -35,9 +35,9 @@ public struct TraceAPIClient: Sendable {
         self.session = session
     }
 
-    /// Fetches the current trace snapshot, or a specific historic session when `sessionId` is provided.
-    public func currentTrace(sessionId: TraceSession.ID? = nil) async throws -> TraceSnapshot {
-        guard let url = traceURL(sessionId: sessionId) else {
+    /// Fetches the current trace snapshot.
+    public func currentTrace() async throws -> TraceSnapshot {
+        guard let url = traceURL() else {
             throw ClientError.invalidURL
         }
 
@@ -45,8 +45,8 @@ public struct TraceAPIClient: Sendable {
     }
 
     /// Fetches the current trace summary without large prompt and response payloads.
-    public func currentTraceSummary(sessionId: TraceSession.ID? = nil) async throws -> TraceSnapshot {
-        guard let url = traceSummaryURL(sessionId: sessionId) else {
+    public func currentTraceSummary() async throws -> TraceSnapshot {
+        guard let url = traceSummaryURL() else {
             throw ClientError.invalidURL
         }
 
@@ -132,120 +132,7 @@ public struct TraceAPIClient: Sendable {
         return try decoder.decode(type, from: data)
     }
 
-    /// Fetches the known proxy sessions and the id of the currently live session.
-    public func sessions() async throws -> TraceSessionList {
-        guard let url = URL(string: "/api/sessions", relativeTo: baseURL)?.absoluteURL else {
-            throw ClientError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 2
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-
-        let (data, response) = try await session.data(for: request)
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        guard (200..<300).contains(status) else {
-            throw ClientError.badStatus(status)
-        }
-
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(TraceSessionList.self, from: data)
-    }
-
-    /// Fetches the session-history list with per-session call counts.
-    public func sessionSummaries() async throws -> SessionList {
-        guard let url = URL(string: "/api/sessions", relativeTo: baseURL)?.absoluteURL else {
-            throw ClientError.invalidURL
-        }
-
-        return try await decode(SessionList.self, from: url)
-    }
-
-    /// Loads every captured node for one historical session, oldest-first.
-    public func sessionTraces(sessionId: TraceSession.ID) async throws -> TraceSnapshot {
-        guard let encodedId = sessionId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "/api/sessions/\(encodedId)/traces", relativeTo: baseURL)?.absoluteURL
-        else {
-            throw ClientError.invalidURL
-        }
-
-        return try await decode(TraceSnapshot.self, from: url)
-    }
-
-    /// Routes subsequent proxy traffic into an existing session.
-    public func activateSession(sessionId: TraceSession.ID) async throws -> Session {
-        guard let encodedId = sessionId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "/api/sessions/\(encodedId)/activate", relativeTo: baseURL)?.absoluteURL
-        else {
-            throw ClientError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 5
-
-        return try await decode(Session.self, from: request)
-    }
-
-    /// Renames a session and returns its updated metadata.
-    public func renameSession(sessionId: TraceSession.ID, name: String) async throws -> Session {
-        guard let encodedId = sessionId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "/api/sessions/\(encodedId)", relativeTo: baseURL)?.absoluteURL
-        else {
-            throw ClientError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "PATCH"
-        request.timeoutInterval = 5
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(RenameSessionBody(name: name))
-
-        return try await decode(Session.self, from: request)
-    }
-
-    /// Soft-deletes a session so it no longer appears in the history list.
-    public func deleteSession(sessionId: TraceSession.ID) async throws {
-        guard let encodedId = sessionId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "/api/sessions/\(encodedId)", relativeTo: baseURL)?.absoluteURL
-        else {
-            throw ClientError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
-        request.timeoutInterval = 5
-
-        let (_, response) = try await session.data(for: request)
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        guard (200..<300).contains(status) else {
-            throw ClientError.badStatus(status)
-        }
-    }
-
-    /// Creates a fresh live proxy session and returns its server-generated metadata.
-    public func createSession() async throws -> TraceSession {
-        guard let url = URL(string: "/api/sessions", relativeTo: baseURL)?.absoluteURL else {
-            throw ClientError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 2
-
-        let (data, response) = try await session.data(for: request)
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        guard (200..<300).contains(status) else {
-            throw ClientError.badStatus(status)
-        }
-
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(TraceSession.self, from: data)
-    }
-
-    /// Deletes all nodes in the current live trace while keeping the proxy session alive.
+    /// Deletes all nodes in the current live trace.
     public func clearTrace() async throws {
         guard let url = URL(string: "/api/traces/current", relativeTo: baseURL)?.absoluteURL else {
             throw ClientError.invalidURL
@@ -279,40 +166,17 @@ public struct TraceAPIClient: Sendable {
         }
     }
 
-    /// Builds the trace endpoint URL, adding `session_id` only for historic session reads.
-    private func traceURL(sessionId: TraceSession.ID?) -> URL? {
-        guard let baseTraceURL = URL(string: "/api/traces/current", relativeTo: baseURL)?.absoluteURL else {
-            return nil
-        }
-
-        return traceURL(baseTraceURL: baseTraceURL, sessionId: sessionId)
+    /// Builds the trace endpoint URL.
+    private func traceURL() -> URL? {
+        URL(string: "/api/traces/current", relativeTo: baseURL)?.absoluteURL
     }
 
     /// Builds the lightweight trace endpoint URL for graph polling.
-    private func traceSummaryURL(sessionId: TraceSession.ID?) -> URL? {
-        guard let baseTraceURL = URL(string: "/api/traces/current/summary", relativeTo: baseURL)?.absoluteURL else {
-            return nil
-        }
-
-        return traceURL(baseTraceURL: baseTraceURL, sessionId: sessionId)
-    }
-
-    /// Adds `session_id` to a trace URL when reading a historical session.
-    private func traceURL(baseTraceURL: URL, sessionId: TraceSession.ID?) -> URL? {
-        guard let sessionId, !sessionId.isEmpty else {
-            return baseTraceURL
-        }
-
-        var components = URLComponents(url: baseTraceURL, resolvingAgainstBaseURL: false)
-        components?.queryItems = [URLQueryItem(name: "session_id", value: sessionId)]
-        return components?.url
+    private func traceSummaryURL() -> URL? {
+        URL(string: "/api/traces/current/summary", relativeTo: baseURL)?.absoluteURL
     }
 }
 
 private struct EditOutputBody: Encodable {
     let output: String
-}
-
-private struct RenameSessionBody: Encodable {
-    let name: String
 }

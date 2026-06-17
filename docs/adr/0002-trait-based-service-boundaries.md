@@ -5,7 +5,7 @@
 ## Context
 
 Following [0001](./0001-modular-monolith.md), the backend is split into service crates
-(`tether-cache`, `tether-trace`, `tether-sessions`, `tether-auth`, `tether-settings`, `tether-gateway`).
+(`tether-cache`, `tether-trace`, `tether-auth`, `tether-settings`, `tether-gateway`).
 These services must collaborate (e.g. the gateway needs the cache and must hand captured
 calls to the trace service) without:
 
@@ -16,7 +16,7 @@ calls to the trace service) without:
 ## Decision
 
 Define each service's public surface as a **trait** in a shared `tether-contracts` crate, e.g.
-`CacheService`, `TraceService`, `TraceSink`, `SessionService`. Service crates *implement*
+`CacheService`, `TraceService`, `TraceSink`. Service crates *implement*
 their trait; callers depend only on the trait (held as `Arc<dyn Trait>`). The **composition
 root** (`src/main.rs`) is the single place that constructs concrete implementations and injects
 them.

@@ -34,10 +34,6 @@ pub(crate) struct AppState {
     anthropic_upstream: Arc<str>,
     db: Arc<Mutex<Connection>>,
     trace_sink: trace::TraceSink,
-    /// Session that incoming traffic is currently routed into. `None` falls back
-    /// to the most recent session; the macOS app sets it when a user loads or
-    /// creates a session so new calls join the right one.
-    current_session_id: trace::ActiveSession,
     cache_enabled: bool,
     auth: Option<Arc<AuthContext>>,
     /// Provider credentials sourced from the local environment (the macOS app
@@ -80,20 +76,18 @@ async fn main() {
     let anthropic_key_present = anthropic_api_key.is_some();
     let (trace_sink, trace_events) =
         trace::TraceSink::bounded(trace::DEFAULT_TRACE_CHANNEL_CAPACITY);
-    let current_session_id: trace::ActiveSession = Arc::new(Mutex::new(None));
     let state = AppState {
         client,
         openai_upstream: Arc::from(openai.as_str()),
         anthropic_upstream: Arc::from(anthropic.as_str()),
         db: Arc::new(Mutex::new(conn)),
         trace_sink,
-        current_session_id: current_session_id.clone(),
         cache_enabled,
         auth,
         openai_api_key,
         anthropic_api_key,
     };
-    trace::spawn_ingest_worker(state.db.clone(), current_session_id, trace_events);
+    trace::spawn_ingest_worker(state.db.clone(), trace_events);
 
     let app = Router::new()
         .merge(api_docs::router())

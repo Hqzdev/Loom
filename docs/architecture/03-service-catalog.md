@@ -10,13 +10,13 @@ Each backend service crate, its single responsibility, the interface it exposes 
 ## 3.1 `tether-domain`
 - **Responsibility:** shared value types and error kinds. Pure data, no I/O, no async, no
   dependency on any other tether crate.
-- **Owns:** `AgentNode`, `TraceSession`, `TraceSnapshot`, `NodeStatus`, `CacheKey`,
+- **Owns:** `AgentNode`, `TraceSnapshot`, `NodeStatus`, `CacheKey`,
   `CapturedCall`, `Provider`, `DomainError`.
 - **Replaces:** the scattered struct definitions currently inside `trace.rs`.
 
 ## 3.2 `tether-contracts`
 - **Responsibility:** the *interfaces* between services + the wire DTOs.
-- **Owns:** `CacheService`, `TraceService`, `TraceSink`, `SessionService`, `AuthService`,
+- **Owns:** `CacheService`, `TraceService`, `TraceSink`, `AuthService`,
   `SettingsService` traits; request/response DTOs with OpenAPI annotations.
 - **Why separate:** lets services depend on each other's *contract* without a code cycle.
 
@@ -52,12 +52,6 @@ Each backend service crate, its single responsibility, the interface it exposes 
 - **Data:** `trace_calls` table (via `TraceRepo`).
 - **Replaces:** the bulk of `trace.rs` (964 lines) — split into summarize / cost / query /
   ingest / routes (see [04](./04-code-organization.md)).
-
-## 3.8 `tether-sessions`
-- **Responsibility:** session lifecycle. Implements `SessionService`.
-- **Owns:** create / list / resolve-current.
-- **Data:** `sessions` table (via `SessionRepo`).
-- **Replaces:** session handlers currently in `trace.rs`.
 
 ## 3.9 `tether-auth`
 - **Responsibility:** identity. Implements `AuthService`.

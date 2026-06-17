@@ -74,7 +74,7 @@ title = newTitle
 Prefer comments that explain intent, constraints, or edge cases:
 
 ```swift
-/// Keeps historic proxy sessions isolated while live Codex logs are merged only into the active session.
+/// Keeps proxy traces ordered while live Codex logs are merged into the current stream.
 ```
 
 ## Documentation Ownership

@@ -3,7 +3,6 @@ import SwiftUI
 import UI
 
 struct TitleBar: View {
-    let session: TraceSession?
     let palette: AgentTracePalette
 
     var body: some View {
@@ -24,20 +23,6 @@ struct TitleBar: View {
                 Text("Tether")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(palette.text)
-
-                if let session {
-                    Text(session.id)
-                        .font(.system(size: 10.5, weight: .medium, design: .monospaced))
-                        .foregroundStyle(palette.textTertiary)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(palette.panelSecondary)
-                        .clipShape(RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: palette.controlRadius, style: .continuous)
-                                .stroke(palette.border, lineWidth: 1)
-                        )
-                }
             }
             .padding(.horizontal, 12)
             .frame(height: 42)

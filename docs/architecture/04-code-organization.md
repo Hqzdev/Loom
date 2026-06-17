@@ -72,15 +72,14 @@ Status: implemented as `CodexLogObserver.swift` plus `Networking/Codex/*`.
 TraceStore.swift            @MainActor ObservableObject, published state  (~110)
 ProxyConnectionStatus.swift the enum + title/detail/color                 (~70)
 TraceRefreshCoordinator.swift  polling loop + refresh orchestration       (~120)
-SessionsController.swift    create / select / clear session ops           (~90)
 SnapshotCombiner.swift      pure combine of proxy + codex snapshots       (~90)
 ```
 Status: implemented with `TraceStore.swift`, `ProxyConnectionStatus.swift`,
-`TraceStore+Sessions.swift`, and `SnapshotCombiner.swift`.
+trace refresh helpers, and `SnapshotCombiner.swift`.
 
 ### `Core/Models/TraceModels.swift` (297) → `Core/Models/`
 ```
-one file per type: AgentNode.swift · TraceSession.swift · TraceSnapshot.swift
+one file per type: AgentNode.swift · TraceSnapshot.swift
 NodeStatus.swift · AgentPrompt.swift · AgentResponse.swift · AgentError.swift
 InspectorTab.swift · ResponseLanguage.swift            (each ≤80)
 ```

@@ -64,7 +64,7 @@ struct GeneralSettingsView: View {
         SettingsSection("Behavior", palette: palette) {
             SettingsToggleRow(
                 "Confirm before clearing traces",
-                subtitle: "Ask for confirmation before permanently clearing all proxy sessions.",
+                subtitle: "Ask for confirmation before permanently clearing captured traces.",
                 isOn: $preferences.confirmBeforeClearing,
                 palette: palette
             )

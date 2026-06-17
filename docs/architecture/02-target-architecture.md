@@ -17,7 +17,6 @@ proxy/                         ← Cargo workspace root
 │   ├── tether-gateway/          transparent reverse proxy: routing, forwarding, response tee
 │   ├── tether-cache/            sha256-keyed response store (get / put / clear)
 │   ├── tether-trace/            trace ingestion, summarization, cost calc, query API
-│   ├── tether-sessions/         session lifecycle (create / list / current)
 │   ├── tether-auth/             JWT issue/verify, Google OAuth
 │   ├── tether-settings/         profile + app settings + encrypted API keys
 │   └── tether-http/             Axum router assembly: mounts each service's routes
@@ -32,8 +31,8 @@ proxy/                         ← Cargo workspace root
         tether-contracts   (traits + DTOs; depends on domain)
                 ▲
    ┌────────────┼─────────────┬───────────┬──────────┐
- cache        trace        sessions     auth      settings   ← service crates
-   │            │             │           │          │        (each impls a contract trait,
+ cache        trace          auth      settings   ← service crates
+   │            │             │          │        (each impls a contract trait,
    └──── tether-storage / tether-crypto ──────┘          │         talks to storage, never to
                 ▲                                     │         a sibling's internals)
             tether-gateway  (uses cache + trace via their traits)
@@ -95,7 +94,7 @@ adapter** (a source of `TraceSnapshot`), mirroring the backend's "trace source" 
 ```
 TetherModules/Sources/
 ├── Core/
-│   ├── Models/           one type per file (AgentNode.swift, TraceSession.swift, …)
+│   ├── Models/           one type per file (AgentNode.swift, TraceSnapshot.swift, …)
 │   └── Features/         TCA reducers (one feature per folder)
 ├── Networking/
 │   ├── ProxyAPI/         TraceAPIClient split by endpoint group

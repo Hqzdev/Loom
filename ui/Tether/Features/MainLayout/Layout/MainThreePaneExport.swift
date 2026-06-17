@@ -6,8 +6,6 @@ extension MainThreePaneLayoutView {
     func csvRows(for snapshot: TraceSnapshot) -> [[String]] {
         var rows = [
             [
-                "session_id",
-                "session_title",
                 "node_id",
                 "agent",
                 "provider",
@@ -32,8 +30,6 @@ extension MainThreePaneLayoutView {
 
         for node in snapshot.nodes {
             rows.append([
-                snapshot.session?.id ?? "",
-                snapshot.session?.title ?? "",
                 node.id,
                 node.agentName,
                 node.provider,

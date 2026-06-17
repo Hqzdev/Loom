@@ -25,7 +25,6 @@ pub(super) fn edit_output_result(
     id: String,
     output: String,
 ) -> Result<InvalidationResult, String> {
-    let session_id = node_session_id(conn, &id)?;
     let previous_output = node_response_text(conn, &id)?;
     let previous_output_hash = short_hash(previous_output.as_bytes());
     let output_hash = short_hash(output.as_bytes());
@@ -34,7 +33,7 @@ pub(super) fn edit_output_result(
         params![output, id],
     )
     .map_err(|error| error.to_string())?;
-    let invalidated = descendants(conn, &session_id, &id).map_err(|e| e.to_string())?;
+    let invalidated = descendants(conn, &id).map_err(|e| e.to_string())?;
     mark_stale(conn, &invalidated).map_err(|e| e.to_string())?;
     Ok(InvalidationResult {
         node_id: id,
@@ -47,8 +46,7 @@ pub(super) fn edit_output_result(
 
 /// Returns downstream descendants for a node.
 pub(super) fn downstream_result(conn: &Connection, id: String) -> Result<DownstreamResult, String> {
-    let session_id = node_session_id(conn, &id)?;
-    let downstream = descendants(conn, &session_id, &id).map_err(|e| e.to_string())?;
+    let downstream = descendants(conn, &id).map_err(|e| e.to_string())?;
     Ok(DownstreamResult {
         node_id: id,
         downstream,
@@ -58,7 +56,7 @@ pub(super) fn downstream_result(conn: &Connection, id: String) -> Result<Downstr
 /// Loads the replayable request fields for a node.
 pub(super) fn load_replay_spec(conn: &Connection, id: &str) -> Result<ReplaySpec, String> {
     conn.query_row(
-        "SELECT method, provider, request_target, model, session_id, request_body
+        "SELECT method, provider, request_target, model, request_body
          FROM trace_calls WHERE id = ?1",
         [id],
         |row| {
@@ -67,8 +65,7 @@ pub(super) fn load_replay_spec(conn: &Connection, id: &str) -> Result<ReplaySpec
                 provider: row.get(1)?,
                 target: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
                 model: row.get(3)?,
-                session_id: row.get::<_, Option<String>>(4)?.unwrap_or_default(),
-                body: row.get::<_, Option<Vec<u8>>>(5)?.unwrap_or_default(),
+                body: row.get::<_, Option<Vec<u8>>>(4)?.unwrap_or_default(),
             })
         },
     )
@@ -105,8 +102,7 @@ pub(super) fn persist_replay_result(
         ],
     )
     .map_err(|error| error.to_string())?;
-    let invalidated =
-        descendants(conn, &update.session_id, &update.node_id).map_err(|e| e.to_string())?;
+    let invalidated = descendants(conn, &update.node_id).map_err(|e| e.to_string())?;
     mark_stale(conn, &invalidated).map_err(|e| e.to_string())?;
     Ok(ReplayResult {
         node_id: update.node_id,
@@ -134,29 +130,11 @@ fn node_response_text(conn: &Connection, id: &str) -> Result<String, String> {
     .ok_or_else(|| "trace node not found".to_string())
 }
 
-/// Finds a node's owning session id.
-fn node_session_id(conn: &Connection, id: &str) -> Result<String, String> {
-    conn.query_row(
-        "SELECT session_id FROM trace_calls WHERE id = ?1",
-        [id],
-        |row| row.get::<_, Option<String>>(0),
-    )
-    .optional()
-    .map_err(|error| error.to_string())?
-    .map(|session_id| session_id.unwrap_or_default())
-    .ok_or_else(|| "trace node not found".to_string())
-}
-
 /// Returns all transitive descendants of a trace node.
-fn descendants(
-    conn: &Connection,
-    session_id: &str,
-    root_id: &str,
-) -> rusqlite::Result<Vec<String>> {
-    let mut stmt =
-        conn.prepare("SELECT id, parent_span_id FROM trace_calls WHERE session_id = ?1")?;
+fn descendants(conn: &Connection, root_id: &str) -> rusqlite::Result<Vec<String>> {
+    let mut stmt = conn.prepare("SELECT id, parent_span_id FROM trace_calls")?;
     let edges = stmt
-        .query_map([session_id], |row| {
+        .query_map([], |row| {
             Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;

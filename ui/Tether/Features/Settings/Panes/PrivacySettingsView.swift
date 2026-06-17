@@ -43,8 +43,8 @@ struct PrivacySettingsView: View {
     private var retentionSection: some View {
         SettingsSection("Retention", palette: palette) {
             SettingsStepperRow(
-                title: "Keep sessions for",
-                subtitle: "Older trace sessions can be cleared manually below. Zero keeps everything.",
+                title: "Keep traces for",
+                subtitle: "Older trace history can be cleared manually below. Zero keeps everything.",
                 value: $preferences.retentionDays,
                 range: 0...365,
                 valueLabel: { $0 == 0 ? "Forever" : "\($0) days" },
@@ -57,7 +57,7 @@ struct PrivacySettingsView: View {
         SettingsSection("Data", palette: palette) {
             SettingsButtonRow(
                 "Delete all history",
-                subtitle: "Permanently remove every stored session and trace from this device. Clearing the cache or the view leaves history untouched — this is the only way to delete it.",
+                subtitle: "Permanently remove every stored trace from this device. Clearing the cache or the view leaves history untouched — this is the only way to delete it.",
                 buttonTitle: "Delete History",
                 systemImage: "trash",
                 destructive: true,

@@ -76,35 +76,6 @@ pub(super) fn format_timestamp(milliseconds: i64) -> String {
     local_time(milliseconds).format("%H:%M:%S").to_string()
 }
 
-/// Formats an epoch-millis instant as a local `HH:MM` label for session names.
-pub(super) fn format_time_for_name(milliseconds: i64) -> String {
-    local_time(milliseconds).format("%H:%M").to_string()
-}
-
-/// Derives a session name from a user prompt: the first six words, with an
-/// ellipsis when the prompt ran longer. Returns `None` for blank prompts.
-pub(super) fn session_name_from_prompt(prompt: &str) -> Option<String> {
-    const MAX_WORDS: usize = 6;
-    let words = prompt.split_whitespace().collect::<Vec<_>>();
-    if words.is_empty() {
-        return None;
-    }
-
-    let mut name = cap_text(
-        &words
-            .iter()
-            .take(MAX_WORDS)
-            .copied()
-            .collect::<Vec<_>>()
-            .join(" "),
-        48,
-    );
-    if words.len() > MAX_WORDS && !name.ends_with('…') {
-        name.push('…');
-    }
-    Some(name)
-}
-
 fn local_time(milliseconds: i64) -> DateTime<Local> {
     let seconds = milliseconds.div_euclid(1_000);
     let nanos = milliseconds.rem_euclid(1_000) as u32 * 1_000_000;

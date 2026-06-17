@@ -11,11 +11,6 @@ struct AgentTraceMenuCommands: Commands {
         }
 
         CommandGroup(replacing: .newItem) {
-            Button("New Session") {
-                NotificationCenter.default.post(name: .agentTraceNewSession, object: nil)
-            }
-            .keyboardShortcut("n", modifiers: .command)
-
             Button("Export Traces...") {
                 NotificationCenter.default.post(name: .agentTraceExportTraces, object: nil)
             }
@@ -86,10 +81,10 @@ extension Notification.Name {
     static let agentTraceNewSession = Notification.Name("agentTraceNewSession")
     static let agentTraceExportTraces = Notification.Name("agentTraceExportTraces")
     static let agentTraceCopySelection = Notification.Name("agentTraceCopySelection")
-    /// Non-destructive: returns the graph to the live view without deleting data.
+    /// Non-destructive: clears transient selection without deleting data.
     static let agentTraceClearView = Notification.Name("agentTraceClearView")
-    /// Destructive: permanently deletes every stored session and trace. Only the
-    /// dedicated Privacy settings button posts this.
+    /// Destructive: permanently deletes every stored trace. Only the dedicated
+    /// Privacy settings button posts this.
     static let agentTraceClearAllTraces = Notification.Name("agentTraceClearAllTraces")
     static let agentTraceShowInspector = Notification.Name("agentTraceShowInspector")
     static let agentTraceShowGraph = Notification.Name("agentTraceShowGraph")

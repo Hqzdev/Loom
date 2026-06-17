@@ -4,7 +4,7 @@
 
 ## Responsibility
 
-- Define trace/session graph response shapes consumed by the SwiftUI app.
+- Define trace graph response shapes consumed by the SwiftUI app.
 - Carry lineage, context hash, and stale-node metadata for replay workflows.
 - Keep wire-facing structs independent from storage, routing, and async runtime code.
 - Provide the model source that later OpenAPI generation can derive from.
@@ -12,8 +12,6 @@
 ## Public interface
 
 - `TraceSnapshot`
-- `TraceSessionDto`
-- `SessionListDto`
 - `AgentNodeDto`
 - `AgentPromptDto`
 - `AgentResponseDto`

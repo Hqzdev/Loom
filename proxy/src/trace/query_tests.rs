@@ -5,8 +5,8 @@ use std::sync::{Arc, Mutex};
 use rusqlite::Connection;
 
 use super::{
-    query::{fetch_node_detail, fetch_sessions, fetch_snapshot, fetch_snapshot_summary},
-    schema, sessions, store_insert,
+    query::{fetch_node_detail, fetch_snapshot, fetch_snapshot_summary},
+    schema, store_insert,
     store_row::TraceRow,
 };
 
@@ -14,18 +14,15 @@ use super::{
 #[test]
 fn fetch_snapshot_orders_nodes_and_normalizes_latency() {
     let db = Arc::new(Mutex::new(Connection::open_in_memory().unwrap()));
-    let session_id = {
+    {
         let conn = db.lock().unwrap();
         schema::init_schema(&conn).unwrap();
-        let session = sessions::ensure_current_session(&conn).unwrap();
-        insert_row(&conn, &session.id, "a", 1_000, 100, "miss");
-        insert_row(&conn, &session.id, "b", 2_000, 200, "hit");
-        session.id
+        insert_row(&conn, "a", 1_000, 100, "miss");
+        insert_row(&conn, "b", 2_000, 200, "hit");
     };
 
-    let snapshot = fetch_snapshot(&db, None).unwrap();
+    let snapshot = fetch_snapshot(&db).unwrap();
 
-    assert_eq!(snapshot.session.as_ref().map(|s| &s.id), Some(&session_id));
     assert_eq!(snapshot.nodes.len(), 2);
     assert_eq!(snapshot.nodes[0].id, "a");
     assert_eq!(snapshot.nodes[0].bar_percent, 0.5);
@@ -41,11 +38,10 @@ fn fetch_snapshot_summary_omits_prompt_and_response_payloads() {
     {
         let conn = db.lock().unwrap();
         schema::init_schema(&conn).unwrap();
-        let session = sessions::ensure_current_session(&conn).unwrap();
-        insert_row(&conn, &session.id, "a", 1_000, 100, "miss");
+        insert_row(&conn, "a", 1_000, 100, "miss");
     }
 
-    let snapshot = fetch_snapshot_summary(&db, None).unwrap();
+    let snapshot = fetch_snapshot_summary(&db).unwrap();
 
     assert_eq!(snapshot.nodes.len(), 1);
     assert_eq!(snapshot.nodes[0].id, "a");
@@ -60,8 +56,7 @@ fn fetch_node_detail_returns_full_payload_for_selected_node() {
     {
         let conn = db.lock().unwrap();
         schema::init_schema(&conn).unwrap();
-        let session = sessions::ensure_current_session(&conn).unwrap();
-        insert_row(&conn, &session.id, "a", 1_000, 100, "miss");
+        insert_row(&conn, "a", 1_000, 100, "miss");
     }
 
     let node = fetch_node_detail(&db, "a".to_string()).unwrap().unwrap();
@@ -70,101 +65,191 @@ fn fetch_node_detail_returns_full_payload_for_selected_node() {
     assert_eq!(node.response.text, "world");
 }
 
-/// Verifies explicit session reads fail instead of falling back to another session.
+/// Verifies multi-call agent traces collapse to one user-request node.
 #[test]
-fn fetch_snapshot_missing_session_returns_not_found_error() {
+fn fetch_snapshot_collapses_trace_steps_into_one_request_node() {
+    let db = Arc::new(Mutex::new(Connection::open_in_memory().unwrap()));
+    {
+        let conn = db.lock().unwrap();
+        schema::init_schema(&conn).unwrap();
+        insert_row_with_lineage(
+            &conn,
+            RowSpec {
+                id: "root",
+                trace_id: "root",
+                parent_span_id: None,
+                created_at: 1_000,
+                latency_ms: 100,
+                tokens_in: 3,
+                tokens_out: 4,
+                cost: "$0.0001",
+                prompt_user: "make the change",
+                response_text: "first step",
+            },
+        );
+        insert_row_with_lineage(
+            &conn,
+            RowSpec {
+                id: "child",
+                trace_id: "root",
+                parent_span_id: Some("root"),
+                created_at: 2_000,
+                latency_ms: 250,
+                tokens_in: 5,
+                tokens_out: 6,
+                cost: "$0.0002",
+                prompt_user: "make the change",
+                response_text: "done",
+            },
+        );
+    }
+
+    let snapshot = fetch_snapshot(&db).unwrap();
+
+    assert_eq!(snapshot.nodes.len(), 1);
+    assert_eq!(snapshot.nodes[0].id, "root");
+    assert_eq!(snapshot.nodes[0].depth, 0);
+    assert_eq!(snapshot.nodes[0].latency_ms, 350);
+    assert_eq!(snapshot.nodes[0].tokens_in, 8);
+    assert_eq!(snapshot.nodes[0].tokens_out, 10);
+    assert_eq!(snapshot.nodes[0].cost, "$0.0003");
+    assert_eq!(snapshot.nodes[0].prompt.user, "make the change");
+    assert_eq!(snapshot.nodes[0].response.text, "done");
+}
+
+/// Verifies inspector hydration also returns the collapsed final response.
+#[test]
+fn fetch_node_detail_collapses_trace_steps_into_one_request_node() {
+    let db = Arc::new(Mutex::new(Connection::open_in_memory().unwrap()));
+    {
+        let conn = db.lock().unwrap();
+        schema::init_schema(&conn).unwrap();
+        insert_row_with_lineage(
+            &conn,
+            RowSpec {
+                id: "root",
+                trace_id: "root",
+                parent_span_id: None,
+                created_at: 1_000,
+                latency_ms: 100,
+                tokens_in: 3,
+                tokens_out: 4,
+                cost: "$0.0001",
+                prompt_user: "make the change",
+                response_text: "first step",
+            },
+        );
+        insert_row_with_lineage(
+            &conn,
+            RowSpec {
+                id: "child",
+                trace_id: "root",
+                parent_span_id: Some("root"),
+                created_at: 2_000,
+                latency_ms: 250,
+                tokens_in: 5,
+                tokens_out: 6,
+                cost: "$0.0002",
+                prompt_user: "make the change",
+                response_text: "done",
+            },
+        );
+    }
+
+    let node = fetch_node_detail(&db, "root".to_string()).unwrap().unwrap();
+
+    assert_eq!(node.id, "root");
+    assert_eq!(node.response.text, "done");
+    assert_eq!(node.latency_ms, 350);
+}
+
+/// Verifies traffic is captured without creating session storage.
+#[test]
+fn insert_trace_row_stores_without_session() {
     let db = Arc::new(Mutex::new(Connection::open_in_memory().unwrap()));
     {
         let conn = db.lock().unwrap();
         schema::init_schema(&conn).unwrap();
     }
 
-    let error = match fetch_snapshot(&db, Some("missing-session".to_string())) {
-        Ok(_) => panic!("missing session should not fall back to another snapshot"),
-        Err(error) => error,
-    };
-
-    assert!(matches!(error, rusqlite::Error::QueryReturnedNoRows));
-}
-
-/// Verifies traffic without an active session creates a fresh target and names it.
-#[test]
-fn insert_without_active_session_creates_and_names_fresh_session() {
-    let db = Arc::new(Mutex::new(Connection::open_in_memory().unwrap()));
-    let original_session_id = {
-        let conn = db.lock().unwrap();
-        schema::init_schema(&conn).unwrap();
-        sessions::ensure_current_session(&conn).unwrap().id
-    };
-
-    let created_session_id = store_insert::insert_trace_row(
+    store_insert::insert_trace_row(
         &db,
         trace_row(
             "new-call",
             "Summarize the quarterly roadmap before standup starts",
         ),
         "success",
-        None,
-    )
-    .unwrap();
-
-    assert_ne!(created_session_id, original_session_id);
+    );
 
     let conn = db.lock().unwrap();
-    let name: String = conn
+    let session_count: i64 = conn
         .query_row(
-            "SELECT name FROM sessions WHERE id = ?1",
-            [created_session_id.as_str()],
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'sessions'",
+            [],
             |row| row.get(0),
         )
         .unwrap();
     let call_count: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM trace_calls WHERE session_id = ?1",
-            [created_session_id.as_str()],
+            "SELECT COUNT(*) FROM trace_calls WHERE id = 'new-call'",
+            [],
             |row| row.get(0),
         )
         .unwrap();
 
-    assert_eq!(name, "Summarize the quarterly roadmap before standup…");
+    assert_eq!(session_count, 0);
     assert_eq!(call_count, 1);
 }
 
-/// Verifies the session-list DTO reports the app-level active session, not newest.
-#[test]
-fn fetch_sessions_reports_active_session_id() {
-    let db = Arc::new(Mutex::new(Connection::open_in_memory().unwrap()));
-    let older_id = {
-        let conn = db.lock().unwrap();
-        schema::init_schema(&conn).unwrap();
-        let older = sessions::create_session(&conn, Some("Older")).unwrap();
-        sessions::create_session(&conn, Some("Newer")).unwrap();
-        older.id
-    };
-
-    let list = fetch_sessions(&db, Some(older_id.clone())).unwrap();
-
-    assert_eq!(list.current_session_id.as_deref(), Some(older_id.as_str()));
-    assert_eq!(list.sessions.len(), 2);
-}
-
 /// Inserts one complete trace row for query-path tests.
-fn insert_row(
-    conn: &Connection,
-    session_id: &str,
-    id: &str,
-    created_at: i64,
-    latency_ms: i64,
-    cache_status: &str,
-) {
+fn insert_row(conn: &Connection, id: &str, created_at: i64, latency_ms: i64, cache_status: &str) {
     conn.execute(
         "INSERT INTO trace_calls
-            (id, session_id, created_at, provider, method, path, model, status_code,
+            (id, created_at, provider, method, path, model, status_code,
              cache_status, latency_ms, request_id, prompt_system, prompt_user,
              response_text, response_language, tokens_in, tokens_out, cost)
-         VALUES (?1, ?2, ?3, 'openai', 'POST', '/v1/responses', 'gpt-5.5', 200,
-                 ?4, ?5, 'req', '', 'hello', 'world', 'text', 3, 4, '$0.0001')",
-        (id, session_id, created_at, cache_status, latency_ms),
+         VALUES (?1, ?2, 'openai', 'POST', '/v1/responses', 'gpt-5.5', 200,
+                 ?3, ?4, 'req', '', 'hello', 'world', 'text', 3, 4, '$0.0001')",
+        (id, created_at, cache_status, latency_ms),
+    )
+    .unwrap();
+}
+
+struct RowSpec<'a> {
+    id: &'a str,
+    trace_id: &'a str,
+    parent_span_id: Option<&'a str>,
+    created_at: i64,
+    latency_ms: i64,
+    tokens_in: i64,
+    tokens_out: i64,
+    cost: &'a str,
+    prompt_user: &'a str,
+    response_text: &'a str,
+}
+
+/// Inserts one trace row with explicit lineage for collapsed-request tests.
+fn insert_row_with_lineage(conn: &Connection, spec: RowSpec<'_>) {
+    conn.execute(
+        "INSERT INTO trace_calls
+            (id, created_at, provider, method, path, model, status_code,
+             cache_status, latency_ms, request_id, prompt_system, prompt_user,
+             response_text, response_language, tokens_in, tokens_out, cost,
+             trace_id, parent_span_id)
+         VALUES (?1, ?2, 'openai', 'POST', '/v1/responses', 'gpt-5.5', 200,
+                 'miss', ?3, 'req', '', ?4, ?5, 'text', ?6, ?7, ?8, ?9, ?10)",
+        (
+            spec.id,
+            spec.created_at,
+            spec.latency_ms,
+            spec.prompt_user,
+            spec.response_text,
+            spec.tokens_in,
+            spec.tokens_out,
+            spec.cost,
+            spec.trace_id,
+            spec.parent_span_id,
+        ),
     )
     .unwrap();
 }

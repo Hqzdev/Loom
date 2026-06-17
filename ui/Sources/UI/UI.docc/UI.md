@@ -20,7 +20,3 @@ debugging work rather than marketing presentation.
 - ``AgentTracePalette``
 - ``AgentTraceThemeMode``
 - ``LiquidGlassModifier``
-
-### Session UI
-
-- ``SessionListView``

@@ -72,7 +72,7 @@ final class AppPreferences: ObservableObject {
         didSet { store.set(redactSecrets, forKey: Key.redactSecrets) }
     }
 
-    /// Number of days to retain trace sessions. `0` means keep forever.
+    /// Number of days to retain trace history. `0` means keep forever.
     @Published var retentionDays: Int {
         didSet { store.set(retentionDays, forKey: Key.retentionDays) }
     }

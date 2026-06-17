@@ -112,15 +112,7 @@ pub(super) async fn replay_node(
     let request_id = replay_request_id(header_request_id, summary.request_id.clone());
     let result = persist_replay_update(
         &state,
-        ReplayUpdate::from_summary(
-            id,
-            spec.session_id,
-            status_code,
-            latency_ms,
-            cost,
-            request_id,
-            summary,
-        ),
+        ReplayUpdate::from_summary(id, status_code, latency_ms, cost, request_id, summary),
     )
     .await?;
 

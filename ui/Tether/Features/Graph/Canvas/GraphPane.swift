@@ -8,7 +8,6 @@ struct GraphPane: View {
     private let depthSpacing: CGFloat = 380
     private let zoomRange: ClosedRange<CGFloat> = 0.5...1.8
 
-    let session: TraceSession?
     let nodes: [AgentNode]
     /// Leading history nodes within `nodes`; the rest are the live cluster.
     let historyCount: Int
@@ -37,9 +36,8 @@ struct GraphPane: View {
     }
 
     private var headerContext: String {
-        let sessionTitle = session?.title ?? "No active session"
         let nodeTitle = selectedNode?.stepName ?? "Waiting for calls"
-        return "\(sessionTitle) · \(nodeTitle)"
+        return "Live trace · \(nodeTitle)"
     }
 
     var body: some View {

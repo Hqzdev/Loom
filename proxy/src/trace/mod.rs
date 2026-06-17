@@ -6,8 +6,7 @@
 //! - [`summarize`] — distill a response body into text + token counts
 //! - [`ingest`]   — queue trace events off the proxy hot path
 //! - [`store`]    — write a `trace_calls` row (success / cached / error)
-//! - [`sessions`] — session lifecycle (resolve current, create, backfill)
-//! - [`query`]    — read rows back into a `TraceSnapshot` / session list
+//! - [`query`]    — read rows back into a `TraceSnapshot`
 //! - [`node`]     — map a stored row to a UI `AgentNodeDto`
 //! - [`schema`]   — migrations / schema bootstrap
 //! - [`routes`]   — the Axum HTTP surface
@@ -30,7 +29,6 @@ mod replay_store;
 mod replay_types;
 mod routes;
 mod schema;
-mod sessions;
 mod store;
 mod store_insert;
 mod store_row;
@@ -41,7 +39,7 @@ mod text;
 
 pub(crate) use capture::{MAX_CAPTURE_BYTES, TraceCapture};
 pub(crate) use ingest::{
-    ActiveSession, DEFAULT_TRACE_CHANNEL_CAPACITY, TraceResponse, TraceSink, spawn_ingest_worker,
+    DEFAULT_TRACE_CHANNEL_CAPACITY, TraceResponse, TraceSink, spawn_ingest_worker,
 };
 pub(crate) use routes::{response_request_id, router};
 pub(crate) use schema::init_schema;

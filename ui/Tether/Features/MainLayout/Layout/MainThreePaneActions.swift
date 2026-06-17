@@ -5,54 +5,20 @@ import Networking
 import UniformTypeIdentifiers
 
 extension MainThreePaneLayoutView {
-    /// Starts a new trace session and clears transient UI selections.
-    func startNewSession() {
-        resetTransientSelection()
-        Task {
-            await sessionStore.createNewSession()
-        }
-    }
-
-    /// Returns to the live view without deleting any stored sessions or traces.
+    /// Clears transient UI state without deleting captured trace nodes.
     func returnToLiveView() {
         resetTransientSelection()
-        Task {
-            sessionStore.enterLiveView()
-            await sessionStore.refreshNow()
-        }
     }
 
-    /// Permanently deletes every stored session and trace, then returns to live.
+    /// Permanently deletes every stored trace node.
     /// This is the only path that removes history; invoked from Privacy settings.
     func deleteAllHistory() {
         resetTransientSelection()
         traceStore.clearTrace()
-        Task {
-            sessionStore.enterLiveView()
-            await sessionStore.refreshNow()
-        }
     }
 
-    /// Loads a historical session from the sidebar into the graph.
-    func selectSession(_ sessionId: Session.ID) {
-        resetTransientSelection()
-        Task {
-            await sessionStore.loadSession(sessionId)
-        }
-    }
-
-    /// Soft-deletes a session from the sidebar.
-    func deleteSession(_ sessionId: Session.ID) {
-        if sessionStore.activeSessionId == sessionId {
-            resetTransientSelection()
-        }
-        Task {
-            await sessionStore.deleteSession(sessionId)
-        }
-    }
-
-    /// Clears transient inspector edits and node selection on a session switch.
-    private func resetTransientSelection() {
+    /// Clears transient inspector edits and node selection on a trace reset.
+    func resetTransientSelection() {
         responseEdits.removeAll()
         replayImpacts.removeAll()
         selectedNodeId = nil
@@ -104,7 +70,7 @@ extension MainThreePaneLayoutView {
     func exportTraces() {
         Task { @MainActor in
             await traceStore.loadVisibleNodeDetailsIfNeeded()
-            presentExportPanel(for: TraceSnapshot(session: session, nodes: nodes))
+            presentExportPanel(for: TraceSnapshot(nodes: nodes))
         }
     }
 
