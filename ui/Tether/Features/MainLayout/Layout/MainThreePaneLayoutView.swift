@@ -67,18 +67,15 @@ struct MainThreePaneLayoutView: View {
             let layout = AdaptiveWorkspaceLayout(size: geometry.size)
 
             ZStack {
-                StageBackground(palette: palette)
+                palette.stage
+                    .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    TitleBar(palette: palette)
-                    workspace(layout: layout, size: geometry.size)
-                        .workspaceSurface(layout: layout, palette: palette)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .blur(radius: showingSettings ? 3 : 0)
-                .saturation(showingSettings ? 0.78 : 1)
-                .animation(.smooth(duration: 0.16), value: showingSettings)
-                .environment(\.graphCanvasInputEnabled, !showingSettings)
+                workspace(layout: layout, size: geometry.size)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .blur(radius: showingSettings ? 3 : 0)
+                    .saturation(showingSettings ? 0.78 : 1)
+                    .animation(.smooth(duration: 0.16), value: showingSettings)
+                    .environment(\.graphCanvasInputEnabled, !showingSettings)
 
                 if showingSettings {
                     WorkspaceSettingsOverlay(

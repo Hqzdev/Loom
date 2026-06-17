@@ -14,7 +14,6 @@
 		C0D300000000000000000008 /* Tether/Features/MainLayout/Stores/TraceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D400000000000000000008 /* Tether/Features/MainLayout/Stores/TraceStore.swift */; };
 		C0D300000000000000000009 /* Tether/Features/Menu/AgentTraceMenuCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D400000000000000000009 /* Tether/Features/Menu/AgentTraceMenuCommands.swift */; };
 		C0D30000000000000000000A /* Tether/Features/Settings/Panes/AppSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D40000000000000000000A /* Tether/Features/Settings/Panes/AppSettingsView.swift */; };
-		C0D30000000000000000000B /* Tether/Features/Shell/TitleBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D40000000000000000000B /* Tether/Features/Shell/TitleBar.swift */; };
 		C0D30000000000000000000C /* Tether/Features/Sidebar/Chrome/Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D40000000000000000000C /* Tether/Features/Sidebar/Chrome/Sidebar.swift */; };
 		C0D30000000000000000000D /* Tether/Features/Welcome/WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D40000000000000000000D /* Tether/Features/Welcome/WelcomeView.swift */; };
 		C0D30000000000000000000E /* Tether/Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D40000000000000000000E /* Tether/Item.swift */; };
@@ -53,7 +52,6 @@
 		C0D90000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift */; };
 		C0D90000000000000000001B /* Tether/Features/MainLayout/Layout/MainThreePaneExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001B /* Tether/Features/MainLayout/Layout/MainThreePaneExport.swift */; };
 		C0D90000000000000000001C /* Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001C /* Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift */; };
-		C0D90000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift */; };
 		C0D90000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift */; };
 		C0D90000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D80000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift */; };
 		C0D900000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D800000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift */; };
@@ -102,7 +100,6 @@
 		C0D400000000000000000008 /* Tether/Features/MainLayout/Stores/TraceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Stores/TraceStore.swift; sourceTree = SOURCE_ROOT; };
 		C0D400000000000000000009 /* Tether/Features/Menu/AgentTraceMenuCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Menu/AgentTraceMenuCommands.swift; sourceTree = SOURCE_ROOT; };
 		C0D40000000000000000000A /* Tether/Features/Settings/Panes/AppSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Settings/Panes/AppSettingsView.swift; sourceTree = SOURCE_ROOT; };
-		C0D40000000000000000000B /* Tether/Features/Shell/TitleBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Shell/TitleBar.swift; sourceTree = SOURCE_ROOT; };
 		C0D40000000000000000000C /* Tether/Features/Sidebar/Chrome/Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Sidebar/Chrome/Sidebar.swift; sourceTree = SOURCE_ROOT; };
 		C0D40000000000000000000D /* Tether/Features/Welcome/WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Welcome/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		C0D40000000000000000000E /* Tether/Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Item.swift; sourceTree = SOURCE_ROOT; };
@@ -137,7 +134,6 @@
 		C0D80000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Layout/MainThreePaneActions.swift; sourceTree = SOURCE_ROOT; };
 		C0D80000000000000000001B /* Tether/Features/MainLayout/Layout/MainThreePaneExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Layout/MainThreePaneExport.swift; sourceTree = SOURCE_ROOT; };
 		C0D80000000000000000001C /* Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift; sourceTree = SOURCE_ROOT; };
-		C0D80000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift; sourceTree = SOURCE_ROOT; };
 		C0D80000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift; sourceTree = SOURCE_ROOT; };
 		C0D80000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift; sourceTree = SOURCE_ROOT; };
 		C0D800000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tether/Features/Settings/Shell/SettingsPane.swift; sourceTree = SOURCE_ROOT; };
@@ -229,7 +225,6 @@
 				C0D40000000000000000000F /* Tether/TetherApp.swift */,
 				C0D400000000000000000007 /* Tether/Features/MainLayout/Layout/MainThreePaneLayoutView.swift */,
 				C0D40000000000000000000C /* Tether/Features/Sidebar/Chrome/Sidebar.swift */,
-				C0D40000000000000000000B /* Tether/Features/Shell/TitleBar.swift */,
 				C0D400000000000000000008 /* Tether/Features/MainLayout/Stores/TraceStore.swift */,
 				C0D40000000000000000000D /* Tether/Features/Welcome/WelcomeView.swift */,
 				C0D400000000000000000015 /* Tether/Shared/WindowChromeHider.swift */,
@@ -263,7 +258,6 @@
 				C0D80000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift */,
 				C0D80000000000000000001B /* Tether/Features/MainLayout/Layout/MainThreePaneExport.swift */,
 				C0D80000000000000000001C /* Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift */,
-				C0D80000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift */,
 				C0D80000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift */,
 				C0D80000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift */,
 				C0D800000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift */,
@@ -401,7 +395,6 @@
 				C0D30000000000000000000F /* Tether/TetherApp.swift in Sources */,
 				C0D300000000000000000007 /* Tether/Features/MainLayout/Layout/MainThreePaneLayoutView.swift in Sources */,
 				C0D30000000000000000000C /* Tether/Features/Sidebar/Chrome/Sidebar.swift in Sources */,
-				C0D30000000000000000000B /* Tether/Features/Shell/TitleBar.swift in Sources */,
 				C0D300000000000000000008 /* Tether/Features/MainLayout/Stores/TraceStore.swift in Sources */,
 				C0D30000000000000000000D /* Tether/Features/Welcome/WelcomeView.swift in Sources */,
 				C0D300000000000000000015 /* Tether/Shared/WindowChromeHider.swift in Sources */,
@@ -434,7 +427,6 @@
 				C0D90000000000000000001A /* Tether/Features/MainLayout/Layout/MainThreePaneActions.swift in Sources */,
 				C0D90000000000000000001B /* Tether/Features/MainLayout/Layout/MainThreePaneExport.swift in Sources */,
 				C0D90000000000000000001C /* Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift in Sources */,
-				C0D90000000000000000001D /* Tether/Features/MainLayout/Layout/WorkspaceSurfaceModifier.swift in Sources */,
 				C0D90000000000000000001E /* Tether/Features/MainLayout/Connection/ConnectionHelpSheet.swift in Sources */,
 				C0D90000000000000000001F /* Tether/Features/MainLayout/Connection/ConnectionHelpParts.swift in Sources */,
 				C0D900000000000000000020 /* Tether/Features/Settings/Shell/SettingsPane.swift in Sources */,
