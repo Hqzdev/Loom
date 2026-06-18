@@ -975,7 +975,7 @@ function RightPanel({ time }) {
         <button style={{
           opacity: b1.opacity, transform: `translateY(${b1.ty}px)`,
           width: '100%', padding: '15px 0', borderRadius: 11,
-          background: '#1a1f27', color: C.text, border: `1px solid ${C.borderS}`,
+          background: '#1a1f27', color: '#ffffff', border: `1px solid ${C.borderS}`,
           fontFamily: SANS, fontSize: 14.5, fontWeight: 600, letterSpacing: '-0.01em', cursor: 'pointer',
         }}>Time-Travel · Edit Response</button>
         <button style={{
