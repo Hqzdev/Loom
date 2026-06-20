@@ -25,7 +25,6 @@ const COMPANY_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
-// Renders the shared decorative product mark used in the header and footer.
 function LogoMark() {
   return (
     <img
@@ -39,7 +38,6 @@ function LogoMark() {
   );
 }
 
-// Renders an internal or external footer link with matching analytics metadata.
 function FooterLink({ href, label, external = false }: { href: string; label: string; external?: boolean }) {
   if (external) {
     return (
@@ -61,9 +59,6 @@ function FooterLink({ href, label, external = false }: { href: string; label: st
   );
 }
 
-/**
- * Renders the shared marketing-site header and sticky navigation state.
- */
 export function SiteHeader() {
   const [navStuck, setNavStuck] = useState(false);
 
@@ -84,30 +79,30 @@ export function SiteHeader() {
           Tether
         </Link>
         <div className="nav-links">
-     
-          <Link href="/#demo" onClick={() => trackEvent("navigation_clicked", { label: "Demo", location: "header" })}>
-            Demo
+
+          <Link href="/#demo" onClick={() => trackEvent("navigation_clicked", { label: "Replay bench", location: "header" })}>
+            Replay bench
+          </Link>
+          <Link href="/#how" onClick={() => trackEvent("navigation_clicked", { label: "Setup flow", location: "header" })}>
+            Setup flow
+          </Link>
+          <Link href="/security" onClick={() => trackEvent("navigation_clicked", { label: "Security review", location: "header" })}>
+            Security review
           </Link>
           <Link href="/docs" onClick={() => trackEvent("navigation_clicked", { label: "Docs", location: "header" })}>
             Docs
           </Link>
-          <Link href="/#how" onClick={() => trackEvent("navigation_clicked", { label: "Setup", location: "header" })}>
-            Setup
-          </Link>
-          <Link href="/security" onClick={() => trackEvent("navigation_clicked", { label: "Security", location: "header" })}>
-            Security
-          </Link>
-          <Link href="/#faq" onClick={() => trackEvent("navigation_clicked", { label: "FAQ", location: "header" })}>
-            FAQ
+          <Link href="/#faq" onClick={() => trackEvent("navigation_clicked", { label: "Objections", location: "header" })}>
+            Objections
           </Link>
         </div>
         <div className="nav-actions">
           <Link
             className="nav-cta"
             href="/#download"
-            onClick={() => trackEvent("cta_clicked", { button_text: "Download", location: "header" })}
+            onClick={() => trackEvent("cta_clicked", { button_text: "Install alpha", location: "header" })}
           >
-            Download
+            Install alpha
           </Link>
         </div>
       </div>
@@ -115,9 +110,6 @@ export function SiteHeader() {
   );
 }
 
-/**
- * Renders the shared marketing-site footer and grouped footer links.
- */
 export function SiteFooter() {
   return (
     <footer className="footer wrap">
