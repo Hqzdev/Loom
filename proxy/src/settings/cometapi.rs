@@ -5,7 +5,10 @@ use rusqlite::{OptionalExtension, params};
 
 use crate::{AppState, error::ApiError};
 
-use super::types::{CometApiKeyRequest, CometApiKeyStatus, UpdateResponse};
+use super::{
+    types::{CometApiKeyRequest, CometApiKeyStatus, UpdateResponse},
+    validation,
+};
 
 const COMETAPI_KEY: &str = "cometapi_key";
 
@@ -15,7 +18,7 @@ pub(super) async fn put_cometapi_key(
     Json(payload): Json<CometApiKeyRequest>,
 ) -> Result<Json<UpdateResponse>, ApiError> {
     let db = state.db.clone();
-    let api_key = payload.api_key.trim().to_string();
+    let api_key = validation::provider_key(&payload.api_key, "CometAPI key")?.unwrap_or_default();
     tokio::task::spawn_blocking(move || {
         let conn = db
             .lock()

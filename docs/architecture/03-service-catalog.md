@@ -28,7 +28,7 @@ Each backend service crate, its single responsibility, the interface it exposes 
 
 ## 3.4 `tether-crypto`
 - **Responsibility:** AES-GCM encrypt/decrypt for stored API keys.
-- **Replaces:** `src/crypto.rs` (already small; moved verbatim + doc comments).
+- **Replaces:** `src/crypto.rs` (already small; moved verbatim).
 
 ## 3.5 `tether-cache`
 - **Responsibility:** sha256-keyed response memoization. Implements `CacheService`.

@@ -3,7 +3,7 @@
 use axum::http::{HeaderMap, HeaderName, HeaderValue};
 
 use crate::{
-    AppState,
+    AppState, diagnostics,
     logging::{RED, RESET},
 };
 
@@ -30,7 +30,16 @@ fn insert_anthropic_key(headers: &mut HeaderMap, state: &AppState) {
         Ok(value) => {
             headers.insert(HeaderName::from_static("x-api-key"), value);
         }
-        Err(error) => eprintln!("{RED}x invalid ANTHROPIC_API_KEY: {error}{RESET}\n"),
+        Err(error) => {
+            diagnostics::error(
+                "provider_key_header_invalid",
+                serde_json::json!({
+                    "provider": "anthropic",
+                    "error": error.to_string()
+                }),
+            );
+            eprintln!("{RED}x invalid ANTHROPIC_API_KEY: {error}{RESET}\n");
+        }
     }
 }
 
@@ -44,6 +53,15 @@ fn insert_openai_key(headers: &mut HeaderMap, state: &AppState) {
         Ok(value) => {
             headers.insert(HeaderName::from_static("authorization"), value);
         }
-        Err(error) => eprintln!("{RED}x invalid OPENAI_API_KEY: {error}{RESET}\n"),
+        Err(error) => {
+            diagnostics::error(
+                "provider_key_header_invalid",
+                serde_json::json!({
+                    "provider": "openai",
+                    "error": error.to_string()
+                }),
+            );
+            eprintln!("{RED}x invalid OPENAI_API_KEY: {error}{RESET}\n");
+        }
     }
 }

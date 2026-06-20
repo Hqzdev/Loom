@@ -14,3 +14,4 @@ Format per record: **Context · Decision · Consequences · Status**.
 | [0002](./0002-trait-based-service-boundaries.md) | Trait-based service boundaries | Accepted |
 | [0003](./0003-async-trace-ingestion.md) | Async trace ingestion to decouple the proxy hot path | Accepted |
 | [0004](./0004-openapi-as-dto-source-of-truth.md) | OpenAPI as the review target for wire DTOs | Accepted |
+| [0005](./0005-observability-and-validation.md) | Observability and validation boundaries | Accepted |

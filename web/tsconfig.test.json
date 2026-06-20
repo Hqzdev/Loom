@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": [
+    "lib/public-submissions-core.ts",
+    "lib/public-submissions-core.test.ts",
+    "lib/public-submission-handlers.ts",
+    "lib/public-submission-handlers.test.ts",
+    "lib/public-submissions.ts",
+    "lib/server-diagnostics.ts"
+  ]
+}

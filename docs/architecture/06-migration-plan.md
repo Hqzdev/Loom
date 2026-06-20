@@ -54,7 +54,7 @@ Incremental and **always-shippable**. Every phase ends with the app building and
 ## Phase 5 — SwiftUI app refactor  · L
 - Split `CodexLogObserver`, `TraceStore`, `TraceModels`, `AgentTracePalette`, `InspectorPane`
   per [04](./04-code-organization.md). Reorganize into feature folders.
-- Add per-product DocC catalogs (`Core.docc`, `Networking.docc`, `UI.docc`) + doc comments.
+- Add per-product DocC catalogs (`Core.docc`, `Networking.docc`, `UI.docc`) with article-level documentation.
 - **Exit:** every Swift file ≤200 lines; DocC builds; app builds & runs; smoke green.
 - **Status:** implemented. Swift package models now live one type per file,
   `CodexLogObserver` is split into Codex database/query/event-mapping helpers, the design

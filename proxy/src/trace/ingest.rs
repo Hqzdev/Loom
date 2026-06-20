@@ -6,6 +6,8 @@ use std::sync::{Arc, Mutex};
 use rusqlite::Connection;
 use tokio::sync::mpsc;
 
+use crate::diagnostics;
+
 use super::capture::TraceCapture;
 use super::store::{record_response, record_upstream_error};
 
@@ -60,6 +62,13 @@ impl TraceSink {
     /// Drops trace events on overload; forwarding must never wait for tracing.
     fn enqueue(&self, event: TraceEvent, label: &str) {
         if let Err(error) = self.tx.try_send(event) {
+            diagnostics::warn(
+                "trace_event_dropped",
+                serde_json::json!({
+                    "label": label,
+                    "error": error.to_string()
+                }),
+            );
             eprintln!("  dropped {label}: trace ingestion channel {error}");
         }
     }
@@ -75,7 +84,15 @@ pub(crate) fn spawn_ingest_worker(
             let db = db.clone();
             match tokio::task::spawn_blocking(move || event.persist(&db)).await {
                 Ok(()) => {}
-                Err(error) => eprintln!("  trace ingestion worker failed: {error}"),
+                Err(error) => {
+                    diagnostics::error(
+                        "trace_ingestion_worker_failed",
+                        serde_json::json!({
+                            "error": error.to_string()
+                        }),
+                    );
+                    eprintln!("  trace ingestion worker failed: {error}");
+                }
             }
         }
     })

@@ -26,9 +26,10 @@ without rewriting its logic. See [02-target-architecture](./02-target-architectu
 | 1 | [Current state](./01-current-state.md) | Today's code, the monolith files, pain points |
 | 2 | [Target architecture](./02-target-architecture.md) | Service boundaries, crate layout, data flow diagrams |
 | 3 | [Service catalog](./03-service-catalog.md) | Each service: responsibility, interface, data, owner files |
-| 4 | [Code organization](./04-code-organization.md) | The ≤200-line rule, file-split plan, naming & comment conventions |
+| 4 | [Code organization](./04-code-organization.md) | The ≤200-line rule, file-split plan, naming conventions |
 | 5 | [Documentation strategy](./05-documentation-strategy.md) | rustdoc, DocC, OpenAPI, ADRs, what gets documented and how |
 | 6 | [Migration plan](./06-migration-plan.md) | Phased rollout, each phase shippable & verifiable |
+| 7 | [Observability and validation](./07-observability-validation.md) | Logging, validation boundaries, privacy rules |
 
 Operational runbooks live under `docs/runbooks/`, including CI/CD and release
 publication.
@@ -37,7 +38,8 @@ publication.
 
 1. **One responsibility per module.** A file/crate does one thing; its name says what.
 2. **≤200 lines per source file.** Larger files are split along natural seams (see doc 4).
-3. **English doc comments on every public item.** `///` (Rust) / `///` DocC (Swift).
+3. **Documentation outside implementation by default.** Keep code self-documenting; use docs,
+   API contracts, and ADRs for durable explanations.
 4. **Explicit interfaces between services.** Services depend on *traits/protocols*, not on
    each other's internals. Transport (in-process today) is an implementation detail.
 5. **Domain types live in one shared place.** No duplicated model definitions.

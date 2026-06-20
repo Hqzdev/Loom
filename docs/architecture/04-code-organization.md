@@ -1,7 +1,7 @@
 # 4. Code Organization
 
 How we keep code readable: the size rule, the concrete file-split plan for every god file,
-and the naming/comment conventions.
+and the naming conventions.
 
 ## 4.1 The ≤200-line rule
 
@@ -44,7 +44,7 @@ Current implementation keeps the gateway in-process under `proxy/src/gateway/`
 ### `src/auth/mod.rs` (380) → `crates/tether-auth/src/`
 ```
 lib.rs (re-exports) · context.rs · jwt.rs · extractor.rs · routes.rs   (each ≤150)
-oauth.rs            (from existing auth/oauth.rs, +doc comments)        (~180)
+oauth.rs            (from existing auth/oauth.rs)                       (~180)
 ```
 Current implementation uses `proxy/src/auth/{context,jwt,password,routes,types,google,oauth}.rs`
 with the same boundaries.
@@ -110,14 +110,10 @@ dedicated files.
 - **Swift:** PascalCase types, camelCase members; file name == primary type name. Feature
   folders group view + subviews. Extensions for protocol conformance in `Type+Protocol.swift`.
 
-## 4.5 Comment conventions (English, mandatory on public items)
+## 4.5 Documentation conventions
 
-- **What, not how-restated.** Document intent, invariants, units, and edge cases — never
-  paraphrase the next line of code.
-- **Rust:** crate-level `//!` in every `lib.rs`; `///` on every `pub` item. Document errors
-  (`# Errors`) and panics (`# Panics`) where relevant.
-- **Swift:** `///` DocC comments on every `public`/`internal` symbol that isn't trivially
-  obvious; `- Parameters:` / `- Returns:` / `- Throws:` for non-trivial functions.
-- **Hot paths & non-obvious logic** (tee buffering, cache-key composition, snapshot combine
-  ordering) get a short paragraph explaining *why*.
-- Match the surrounding file's comment density; don't over-comment self-evident code.
+- New implementation code should avoid comments and instead use names, types, and small
+  functions to expose intent.
+- Durable explanations belong in architecture docs, ADRs, runbooks, API docs, and README files.
+- When a change affects behavior, setup, contracts, or architecture, update the relevant docs in
+  the same patch.

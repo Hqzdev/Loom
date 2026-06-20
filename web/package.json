@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test": "tsc -p tsconfig.test.json --outDir /tmp/tether-web-tests && NODE_PATH=./node_modules node --test /tmp/tether-web-tests/*.test.js",
     "start": "next start",
     "lint": "next lint",
     "package:dmg": "../scripts/package-dmg.sh",

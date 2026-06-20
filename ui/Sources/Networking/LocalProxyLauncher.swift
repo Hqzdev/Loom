@@ -28,6 +28,7 @@ public final class LocalProxyLauncher {
             runtimeDirectory = try Self.runtimeDirectory()
             databaseURL = try Self.databaseURL()
         } catch {
+            TetherLogger.proxy.error("local_proxy_runtime_setup_failed: \(error.localizedDescription, privacy: .public)")
             return false
         }
 
@@ -44,8 +45,10 @@ public final class LocalProxyLauncher {
             process.standardError = logHandle
             try process.run()
             self.process = process
+            TetherLogger.proxy.info("local_proxy_started")
             return true
         } catch {
+            TetherLogger.proxy.error("local_proxy_start_failed: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -55,6 +58,7 @@ public final class LocalProxyLauncher {
         guard let process, process.isRunning else { return }
         process.terminate()
         self.process = nil
+        TetherLogger.proxy.info("local_proxy_stopped")
     }
 
     /// Restarts the proxy process using the latest persisted proxy settings.

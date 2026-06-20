@@ -10,7 +10,10 @@ use crate::{
     error::ApiError,
 };
 
-use super::types::{AppSettingsResponse, AppSettingsUpdateRequest};
+use super::{
+    types::{AppSettingsResponse, AppSettingsUpdateRequest},
+    validation,
+};
 
 /// Returns the authenticated user's app preferences.
 pub(super) async fn app_settings(
@@ -31,11 +34,11 @@ pub(super) async fn update_app_settings(
     let auth = require_auth(&state)?;
     let current = ensure_settings(&auth.pool, auth_bearer.user_id).await?;
     let theme = match payload.theme {
-        Some(theme) => validate_theme(&theme)?,
+        Some(theme) => validation::theme(&theme)?,
         None => current.try_get("theme")?,
     };
     let proxy_port = match payload.proxy_port {
-        Some(port) => validate_port(port)?,
+        Some(port) => validation::proxy_port(port)?,
         None => current.try_get("proxy_port")?,
     };
     let local_cache_enabled = payload
@@ -93,24 +96,4 @@ pub(super) fn row_to_app_settings(
         has_openai_key: openai_key.is_some(),
         has_anthropic_key: anthropic_key.is_some(),
     })
-}
-
-/// Validates supported UI theme names.
-fn validate_theme(theme: &str) -> Result<String, ApiError> {
-    match theme {
-        "system" | "light" | "dark" => Ok(theme.to_string()),
-        _ => Err(ApiError::bad_request(
-            "theme must be system, light, or dark",
-        )),
-    }
-}
-
-/// Validates the local proxy port range.
-fn validate_port(port: i32) -> Result<i32, ApiError> {
-    if !(1..=65535).contains(&port) {
-        return Err(ApiError::bad_request(
-            "proxy_port must be between 1 and 65535",
-        ));
-    }
-    Ok(port)
 }

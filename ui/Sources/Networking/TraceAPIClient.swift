@@ -121,9 +121,17 @@ public struct TraceAPIClient: Sendable {
 
     /// Decodes one JSON resource from a prepared proxy API request.
     private func decode<Value: Decodable>(_ type: Value.Type, from request: URLRequest) async throws -> Value {
-        let (data, response) = try await session.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            TetherLogger.networking.error("trace_api_request_failed: \(error.localizedDescription, privacy: .public)")
+            throw error
+        }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else {
+            TetherLogger.networking.warning("trace_api_bad_status: \(status, privacy: .public)")
             throw ClientError.badStatus(status)
         }
 
@@ -142,9 +150,16 @@ public struct TraceAPIClient: Sendable {
         request.httpMethod = "DELETE"
         request.timeoutInterval = 2
 
-        let (_, response) = try await session.data(for: request)
+        let response: URLResponse
+        do {
+            (_, response) = try await session.data(for: request)
+        } catch {
+            TetherLogger.networking.error("trace_clear_request_failed: \(error.localizedDescription, privacy: .public)")
+            throw error
+        }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else {
+            TetherLogger.networking.warning("trace_clear_bad_status: \(status, privacy: .public)")
             throw ClientError.badStatus(status)
         }
     }
@@ -159,9 +174,16 @@ public struct TraceAPIClient: Sendable {
         request.httpMethod = "DELETE"
         request.timeoutInterval = 2
 
-        let (_, response) = try await session.data(for: request)
+        let response: URLResponse
+        do {
+            (_, response) = try await session.data(for: request)
+        } catch {
+            TetherLogger.networking.error("cache_clear_request_failed: \(error.localizedDescription, privacy: .public)")
+            throw error
+        }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else {
+            TetherLogger.networking.warning("cache_clear_bad_status: \(status, privacy: .public)")
             throw ClientError.badStatus(status)
         }
     }

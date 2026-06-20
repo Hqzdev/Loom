@@ -9,7 +9,10 @@ use crate::{
     error::ApiError,
 };
 
-use super::types::{ProfileResponse, ProfileUpdateRequest};
+use super::{
+    types::{ProfileResponse, ProfileUpdateRequest},
+    validation,
+};
 
 /// Returns the authenticated user's current profile.
 pub(super) async fn profile(
@@ -45,7 +48,7 @@ pub(super) async fn update_profile(
         .ok_or_else(|| ApiError::unauthorized("user no longer exists"))?;
 
     let name = match payload.name {
-        Some(name) => normalize_name(&name)?,
+        Some(name) => validation::profile_name(&name)?,
         None => current.try_get("name")?,
     };
     let email = match payload.email {
@@ -72,17 +75,6 @@ pub(super) async fn update_profile(
         name: row.try_get("name")?,
         created_at: row.try_get("created_at")?,
     }))
-}
-
-/// Normalizes and validates a display name for profile storage.
-fn normalize_name(name: &str) -> Result<String, ApiError> {
-    let name = name.trim();
-    if name.is_empty() || name.len() > 120 {
-        return Err(ApiError::bad_request(
-            "name must be between 1 and 120 characters",
-        ));
-    }
-    Ok(name.to_string())
 }
 
 /// Maps duplicate email updates to the settings API conflict response.

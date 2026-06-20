@@ -1,22 +1,16 @@
 # 5. Documentation Strategy
 
-Documentation is produced at three levels: **in-code reference**, **API contract**, and
+Documentation is produced at three levels: **repository reference**, **API contract**, and
 **design records**. All prose is English.
 
-## 5.1 In-code reference (auto-generated)
+## 5.1 Repository reference
 
-### Rust — rustdoc
-- Every crate's `lib.rs` opens with a `//!` summary: what the service does, its one
-  responsibility, and how it fits the workspace.
-- Every `pub` item has a `///` doc comment. Functions document `# Errors` / `# Panics`.
-- Runnable examples (` ```rust ... ``` `) on key public APIs; checked by `cargo test --doc`.
-- Build the site: `cargo doc --workspace --no-deps`. Output wired into CI as an artifact.
+Implementation code should remain self-documenting through names, types, and small functions.
+Durable explanations live in `docs/`, package READMEs, runbooks, ADRs, OpenAPI artifacts, and
+DocC catalog articles.
 
-### Swift — DocC
-- One **DocC catalog** per package product: `Core.docc`, `Networking.docc`, `UI.docc`.
-- Each catalog has a landing article (overview + topics grouping the key types).
-- `///` doc comments on public symbols with `- Parameters/Returns/Throws`.
-- Build: `xcodebuild docbuild` (or Xcode Product ▸ Build Documentation).
+Doc generation remains useful for navigation, but new explanatory material should not be added
+as code comments.
 
 ## 5.2 API contract — OpenAPI
 
@@ -65,7 +59,7 @@ ui/Sources/<Target>/<Target>.docc   per-target DocC catalogs
 ## 5.6 Documentation Definition of Done (per PR)
 
 A change is "documented" when:
-1. New/changed public items have `///` doc comments.
-2. New endpoints appear in the OpenAPI spec and the api guide.
-3. Any architectural decision is captured as an ADR.
-4. `cargo doc` and DocC build with no warnings.
+1. New endpoints appear in the OpenAPI spec and the API guide.
+2. Any architectural decision is captured as an ADR.
+3. Setup, operations, or release behavior changes are captured in runbooks.
+4. User-facing or contributor-facing behavior is reflected in the relevant README or docs page.

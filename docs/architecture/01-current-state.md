@@ -76,7 +76,7 @@ files.
   persistence are entangled.
 - **Duplicated DTO shapes.** Trace DTOs are defined in Rust and again, by hand, as
   `Codable` types in Swift model files with OpenAPI as the reviewed source of truth.
-- **Sparse documentation.** Few doc comments; no generated API reference; no OpenAPI spec;
+- **Sparse documentation.** Limited repository reference material; no generated API reference; no OpenAPI spec;
   no architecture decision records.
 - **Hot path coupling.** The proxy forward path writes traces inline, coupling latency-
   sensitive forwarding to trace persistence.

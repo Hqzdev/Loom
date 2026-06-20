@@ -11,6 +11,7 @@
 mod api_docs;
 mod auth;
 mod context;
+mod diagnostics;
 mod error;
 mod gateway;
 mod logging;
@@ -125,6 +126,16 @@ async fn main() {
     );
     println!("{DIM}Point an agent here, e.g. ANTHROPIC_BASE_URL=http://{addr}{RESET}\n");
     let _ = std::io::stdout().flush();
+    diagnostics::info(
+        "proxy_started",
+        serde_json::json!({
+            "addr": addr,
+            "cache_enabled": cache_enabled,
+            "db_path": db_path,
+            "openai_key_source": key_label(openai_key_present),
+            "anthropic_key_source": key_label(anthropic_key_present)
+        }),
+    );
 
     axum::serve(listener, app)
         .await

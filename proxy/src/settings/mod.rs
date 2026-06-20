@@ -5,6 +5,7 @@ pub(crate) mod cometapi;
 mod keys;
 mod profile;
 mod types;
+mod validation;
 
 use axum::{Router, routing::get};
 

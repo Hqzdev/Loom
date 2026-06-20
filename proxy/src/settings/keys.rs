@@ -12,6 +12,7 @@ use crate::{
 use super::{
     app::ensure_settings,
     types::{ApiKeysUpdateRequest, UpdateResponse},
+    validation,
 };
 
 /// Updates or clears encrypted provider API keys for the authenticated user.
@@ -28,13 +29,15 @@ pub(super) async fn update_api_keys(
     let current = ensure_settings(&auth.pool, auth_bearer.user_id).await?;
 
     let openai_key = match payload.api_key_openai {
-        Some(value) if value.trim().is_empty() => None,
-        Some(value) => Some(cipher.encrypt(value.trim())?),
+        Some(value) => validation::provider_key(&value, "OpenAI API key")?
+            .map(|value| cipher.encrypt(&value))
+            .transpose()?,
         None => current.try_get("api_key_openai")?,
     };
     let anthropic_key = match payload.api_key_anthropic {
-        Some(value) if value.trim().is_empty() => None,
-        Some(value) => Some(cipher.encrypt(value.trim())?),
+        Some(value) => validation::provider_key(&value, "Anthropic API key")?
+            .map(|value| cipher.encrypt(&value))
+            .transpose()?,
         None => current.try_get("api_key_anthropic")?,
     };
 

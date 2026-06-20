@@ -5,6 +5,8 @@ use axum::{
 };
 use serde::Serialize;
 
+use crate::diagnostics;
+
 /// HTTP error type returned by proxy API routes.
 #[derive(Debug)]
 pub(crate) struct ApiError {
@@ -59,6 +61,15 @@ impl ApiError {
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
+        if self.status.is_server_error() {
+            diagnostics::error(
+                "api_error",
+                serde_json::json!({
+                    "status": self.status.as_u16(),
+                    "message": self.message
+                }),
+            );
+        }
         let body = Json(ErrorBody {
             error: self.message.as_str(),
         });
@@ -80,7 +91,12 @@ impl From<sqlx::Error> for ApiError {
             return ApiError::conflict("record already exists");
         }
 
-        eprintln!("database error: {error}");
+        diagnostics::error(
+            "database_error",
+            serde_json::json!({
+                "error": error.to_string()
+            }),
+        );
         ApiError::internal("database error")
     }
 }

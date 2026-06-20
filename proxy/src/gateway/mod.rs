@@ -18,7 +18,7 @@ use futures_util::StreamExt;
 use tokio_stream::wrappers::ReceiverStream;
 
 use crate::{
-    AppState,
+    AppState, diagnostics,
     logging::{RED, RESET, log_cached, log_request, log_response},
     trace,
 };
@@ -47,6 +47,14 @@ pub(crate) async fn proxy(State(state): State<AppState>, req: Request) -> Respon
     let body_bytes = match to_bytes(body, MAX_BODY).await {
         Ok(bytes) => bytes,
         Err(error) => {
+            diagnostics::warn(
+                "request_body_read_failed",
+                serde_json::json!({
+                    "method": method.as_str(),
+                    "path": path,
+                    "error": error.to_string()
+                }),
+            );
             eprintln!("{RED}x failed reading request body: {error}{RESET}\n");
             return (StatusCode::BAD_REQUEST, "tether: cannot read request body").into_response();
         }
@@ -114,6 +122,15 @@ pub(crate) async fn proxy(State(state): State<AppState>, req: Request) -> Respon
             state
                 .trace_sink
                 .record_upstream_error(capture.clone(), message.clone(), latency_ms);
+            diagnostics::warn(
+                "upstream_request_failed",
+                serde_json::json!({
+                    "provider": label,
+                    "path": path,
+                    "latency_ms": latency_ms,
+                    "error": message
+                }),
+            );
             eprintln!("{RED}< upstream error: {error}{RESET}\n");
             return (
                 StatusCode::BAD_GATEWAY,

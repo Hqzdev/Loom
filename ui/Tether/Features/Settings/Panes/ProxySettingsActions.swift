@@ -1,5 +1,6 @@
 import Foundation
 import Networking
+import OSLog
 
 extension ProxySettingsView {
     /// Persists validated proxy settings and restarts the local helper.
@@ -12,6 +13,7 @@ extension ProxySettingsView {
             footerMessage = "Requires proxy restart"
             footerMessageIsError = false
         } catch {
+            TetherLogger.settings.error("proxy_settings_save_failed: \(error.localizedDescription, privacy: .public)")
             footerMessage = error.localizedDescription
             footerMessageIsError = true
         }
@@ -25,6 +27,7 @@ extension ProxySettingsView {
                 footerMessage = "Cache cleared"
                 footerMessageIsError = false
             } catch {
+                TetherLogger.settings.error("cache_clear_failed: \(error.localizedDescription, privacy: .public)")
                 footerMessage = error.localizedDescription
                 footerMessageIsError = true
             }
@@ -116,6 +119,7 @@ extension ProxySettingsView {
                 }
             } catch {
                 await MainActor.run {
+                    TetherLogger.settings.error("cometapi_connection_test_failed: \(error.localizedDescription, privacy: .public)")
                     cometAPIStatus = error.localizedDescription
                     cometAPIStatusIsError = true
                     testingCometAPI = false
@@ -130,6 +134,7 @@ extension ProxySettingsView {
             try await CometAPIClient().saveAPIKey(key)
         } catch {
             await MainActor.run {
+                TetherLogger.settings.error("cometapi_key_sync_failed: \(error.localizedDescription, privacy: .public)")
                 cometAPIStatus = error.localizedDescription
                 cometAPIStatusIsError = true
             }
