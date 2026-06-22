@@ -6,7 +6,7 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { trackEvent } from "@/lib/analytics";
 import { NODES, type NodeStatus, type TraceNode } from "@/lib/data";
 
-const GITHUB_RELEASE_HREF = "https://github.com/Hqzdev/Tether/releases/latest";
+const GITHUB_RELEASE_HREF = "https://github.com/Hqzdev/Tether/releases/latest/download/Tether.dmg";
 
 
 type LandingIconName = IconName;

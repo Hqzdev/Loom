@@ -14,7 +14,7 @@ import { docsPageToMarkdown } from "@/lib/docs-markdown";
 import styles from "./DocsPage.module.css";
 
 const GITHUB_HREF = "https://github.com/Hqzdev/Tether";
-const RELEASE_HREF = "https://github.com/Hqzdev/Tether/releases/latest";
+const RELEASE_HREF = "https://github.com/Hqzdev/Tether/releases/latest/download/Tether.dmg";
 
 
 function docsHref(slug: string) {

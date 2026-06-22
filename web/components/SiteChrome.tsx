@@ -19,6 +19,8 @@ const DEVELOPER_LINKS = [
   { label: "GitHub", href: "https://github.com/Hqzdev/Tether", external: true },
 ];
 
+const RELEASE_DOWNLOAD_HREF = "https://github.com/Hqzdev/Tether/releases/latest/download/Tether.dmg";
+
 const COMPANY_LINKS = [
   { label: "Privacy", href: "/privacy" },
   { label: "Security", href: "/security" },
@@ -99,8 +101,10 @@ export function SiteHeader() {
         <div className="nav-actions">
           <Link
             className="nav-cta"
-            href="/#download"
+            href={RELEASE_DOWNLOAD_HREF}
             onClick={() => trackEvent("cta_clicked", { button_text: "Download", location: "header" })}
+            rel="noreferrer"
+            target="_blank"
           >
             Download
           </Link>
