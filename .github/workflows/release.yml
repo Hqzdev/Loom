@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  macos:
     runs-on: macos-latest
 
     steps:
@@ -28,10 +28,80 @@ jobs:
       - name: Build DMG
         run: ./scripts/package-dmg.sh
 
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tether-macos
+          path: dist/Tether.dmg
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/linux/package-lock.json
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            core/proxy
+            apps/linux/src-tauri
+
+      - name: Install Linux desktop dependencies
+        run: >
+          sudo apt-get update &&
+          sudo apt-get install -y
+          build-essential
+          curl
+          file
+          libayatana-appindicator3-dev
+          librsvg2-dev
+          libssl-dev
+          libwebkit2gtk-4.1-dev
+          patchelf
+          wget
+
+      - name: Build Linux app artifacts
+        run: ./scripts/package-linux.sh
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tether-linux
+          path: dist/linux/*
+          if-no-files-found: error
+
+  publish:
+    runs-on: ubuntu-22.04
+    needs: [macos, linux]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Tether.dmg
-          generate_release_notes: true
+          body_path: .github/releases/v1.7.md
+          files: |
+            release-assets/tether-macos/Tether.dmg
+            release-assets/tether-linux/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
