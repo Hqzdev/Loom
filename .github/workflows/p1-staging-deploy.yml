@@ -1,0 +1,52 @@
+name: P1 Staging Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-staging-artifact:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build staging DMG
+        run: ./scripts/package-dmg.sh
+      - name: Create staging deploy manifest
+        run: ./scripts/p1-deploy-manifest.sh staging dist/Tether.dmg dist/deploy-manifest.staging.json
+      - name: Upload staging artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tether-staging-${{ github.sha }}
+          path: |
+            dist/Tether.dmg
+            dist/deploy-manifest.staging.json
+
+  deploy-staging:
+    needs: build-staging-artifact
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download staging artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: tether-staging-${{ github.sha }}
+          path: dist
+      - name: Validate staging health
+        if: ${{ secrets.TETHER_STAGING_BASE_URL != '' }}
+        continue-on-error: true
+        env:
+          TETHER_BASE_URL: ${{ secrets.TETHER_STAGING_BASE_URL }}
+        run: |
+          TETHER_BASE_URL="$TETHER_BASE_URL" ./scripts/p1-ready-check.sh
+          ./scripts/p1-latency-smoke.sh "$TETHER_BASE_URL" /healthz 30 1 5 350

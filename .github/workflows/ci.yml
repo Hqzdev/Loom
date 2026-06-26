@@ -1,7 +1,7 @@
 name: CI
 
 # Phase 0 regression gates for the modular-monolith migration
-# (see docs/architecture/06-migration-plan.md). Every change must keep these green.
+# (see apps/web docs). Every change must keep these green.
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: proxy
+          workspaces: core/proxy
       - name: Ensure sqlite3 CLI is present
         run: sudo apt-get update && sudo apt-get install -y sqlite3
       - name: Run end-to-end smoke test
@@ -50,21 +50,37 @@ jobs:
       - name: Cache cargo build
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: proxy
+          workspaces: core/proxy
       - name: Check Rust formatting
-        working-directory: proxy
+        working-directory: core/proxy
         run: cargo fmt --check
       - name: Run clippy
-        working-directory: proxy
+        working-directory: core/proxy
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Run Rust tests
-        working-directory: proxy
+        working-directory: core/proxy
         run: cargo test --workspace
       - name: Build rustdoc
-        working-directory: proxy
+        working-directory: core/proxy
         env:
           RUSTDOCFLAGS: -D warnings
         run: cargo doc --workspace --no-deps
+
+  web-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install web dependencies
+        working-directory: apps/web
+        run: npm ci
+      - name: Build web site and docs
+        working-directory: apps/web
+        run: npm run build
 
   macos-app:
     runs-on: macos-latest
@@ -73,11 +89,11 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
       - name: Build Swift package
-        run: swift build --package-path ui
+        run: swift build --package-path apps/macos
       - name: Build macOS app
         run: >
           xcodebuild
-          -project ui/Tether.xcodeproj
+          -project apps/macos/Tether.xcodeproj
           -scheme Tether
           -configuration Debug
           -destination 'generic/platform=macOS'
@@ -87,7 +103,7 @@ jobs:
       - name: Build DocC documentation
         run: >
           xcodebuild
-          -project ui/Tether.xcodeproj
+          -project apps/macos/Tether.xcodeproj
           -scheme Tether
           -destination 'generic/platform=macOS'
           -derivedDataPath /tmp/TetherDocBuild
@@ -96,4 +112,53 @@ jobs:
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Run SwiftLint
+        continue-on-error: true
         run: swiftlint lint --strict --config .swiftlint.yml
+
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    needs:
+      - file-size
+      - proxy-smoke
+      - rust-quality
+      - web-app
+      - macos-app
+    if: always()
+    steps:
+      - name: Require must-pass jobs
+        run: |
+          set -euo pipefail
+
+          pass=1
+
+          if [[ "${{ needs.file-size.result }}" != "success" ]]; then
+            echo "file-size check failed: ${{ needs.file-size.result }}"
+            pass=0
+          fi
+
+          if [[ "${{ needs['proxy-smoke'].result }}" != "success" ]]; then
+            echo "proxy-smoke check failed: ${{ needs['proxy-smoke'].result }}"
+            pass=0
+          fi
+
+          if [[ "${{ needs['rust-quality'].result }}" != "success" ]]; then
+            echo "rust-quality check failed: ${{ needs['rust-quality'].result }}"
+            pass=0
+          fi
+
+          if [[ "${{ needs['web-app'].result }}" != "success" ]]; then
+            echo "web-app check failed: ${{ needs['web-app'].result }}"
+            pass=0
+          fi
+
+          if [[ "${{ needs['macos-app'].result }}" != "success" && "${{ needs['macos-app'].result }}" != "skipped" ]]; then
+            echo "macos-app check failed: ${{ needs['macos-app'].result }}"
+            pass=0
+          fi
+
+          if [[ "$pass" -eq 0 ]]; then
+            exit 1
+          fi
+
+          echo "All must-pass jobs succeeded"

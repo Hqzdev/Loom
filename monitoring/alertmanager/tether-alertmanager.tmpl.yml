@@ -1,0 +1,33 @@
+route:
+  receiver: "default"
+  group_by: [environment, service]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - match:
+        severity: page
+      receiver: production-pager
+      continue: true
+    - match:
+        severity: warning
+      receiver: staging-slack
+
+receivers:
+  - name: default
+
+  - name: production-pager
+    pagerduty_configs:
+      - routing_key: {{PAGERDUTY_ROUTING_KEY}}
+
+  - name: staging-slack
+    slack_configs:
+      - channel: "#tether-ops"
+        api_url: {{SLACK_WEBHOOK_URL}}
+        text: '{{ .CommonAnnotations.summary }} {{ .CommonAnnotations.description }}'
+
+  - name: production-slack
+    slack_configs:
+      - channel: "#tether-ops-prod"
+        api_url: {{SLACK_WEBHOOK_URL}}
+        text: '{{ .CommonAnnotations.summary }} {{ .CommonAnnotations.description }}'

@@ -1,0 +1,33 @@
+[package]
+name = "tether-proxy"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+# Modular-monolith workspace: the binary above plus the extracted service crates
+# under crates/. They compile into this one process (see apps/web docs).
+[workspace]
+members = ["crates/*"]
+
+[dependencies]
+tether-cache = { path = "crates/tether-cache" }
+tether-crypto = { path = "crates/tether-crypto" }
+tether-domain = { path = "crates/tether-domain" }
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+axum = "0.8"
+reqwest = { version = "0.12", features = ["blocking", "json", "stream"] }
+futures-util = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bytes = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+sha2 = "0.10"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "migrate"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "9"
+argon2 = "0.5"
+rand_core = { version = "0.6", features = ["getrandom"] }
+base64 = "0.22"
+url = "2"

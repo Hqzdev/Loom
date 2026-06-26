@@ -1,0 +1,41 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./prometheus/tether-scrape.generated.yml:/etc/prometheus/tether-scrape.generated.yml:ro
+      - ./prometheus/tether-alerts.yml:/etc/prometheus/tether-alerts.yml:ro
+    command:
+      - --config.file=/etc/prometheus/tether-scrape.generated.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.enable-admin-api
+      - --web.enable-remote-write-receiver
+      - --web.listen-address=:9090
+    ports:
+      - "9090:9090"
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    volumes:
+      - ./alertmanager/tether-alertmanager.generated.yml:/etc/alertmanager/alertmanager.yml:ro
+    command: [--config.file=/etc/alertmanager/alertmanager.yml]
+    ports:
+      - "9093:9093"
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    volumes:
+      - ./blackbox/blackbox-exporter.yml:/etc/blackbox_exporter/config.yml:ro
+    command: [--config.file=/etc/blackbox_exporter/config.yml]
+    ports:
+      - "9115:9115"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"

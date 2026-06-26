@@ -1,0 +1,66 @@
+name: P1 Production Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag or sha to promote as production release"
+        required: true
+      production_base_url:
+        description: "Optional production health base URL for smoke checks"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-production-artifact:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build production DMG
+        run: ./scripts/package-dmg.sh
+      - name: Create production deploy manifest
+        env:
+          TETHER_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: ./scripts/p1-deploy-manifest.sh production dist/Tether.dmg dist/deploy-manifest.production.json
+      - name: Upload production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tether-production-${{ github.sha }}
+          path: |
+            dist/Tether.dmg
+            dist/deploy-manifest.production.json
+
+  deploy-production:
+    needs: build-production-artifact
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download production artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: tether-production-${{ github.sha }}
+          path: dist
+      - name: Validate production health
+        if: ${{ inputs.production_base_url != '' }}
+        run: |
+          base_url="${{ inputs.production_base_url }}"
+          TETHER_BASE_URL="$base_url" ./scripts/p1-ready-check.sh
+          ./scripts/p1-latency-smoke.sh "$base_url" /readyz 50 1 5 250
+      - name: Publish production release
+        if: ${{ inputs.production_base_url == '' || success() }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          generate_release_notes: true
+          files: dist/Tether.dmg
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

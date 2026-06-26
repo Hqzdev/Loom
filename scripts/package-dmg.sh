@@ -10,7 +10,7 @@ BUILD_DIR="$DIST_DIR/build"
 STAGE_DIR="$BUILD_DIR/dmg-stage"
 APP_STAGE="$STAGE_DIR/$APP_NAME.app"
 DERIVED_DATA="$BUILD_DIR/DerivedData"
-WEB_DOWNLOAD_DIR="$ROOT/web/public/downloads"
+WEB_DOWNLOAD_DIR="$ROOT/apps/web/public/downloads"
 
 need() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -28,11 +28,11 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$STAGE_DIR" "$DIST_DIR" "$WEB_DOWNLOAD_DIR"
 
 echo "==> Building proxy helper"
-cargo build --manifest-path "$ROOT/proxy/Cargo.toml" --release
+cargo build --manifest-path "$ROOT/core/proxy/Cargo.toml" --release
 
 echo "==> Building macOS app"
 xcodebuild \
-  -project "$ROOT/ui/Tether.xcodeproj" \
+  -project "$ROOT/apps/macos/Tether.xcodeproj" \
   -scheme "$SCHEME_NAME" \
   -configuration Release \
   -destination "generic/platform=macOS" \
@@ -52,7 +52,7 @@ fi
 echo "==> Staging app bundle"
 cp -R "$BUILT_APP" "$APP_STAGE"
 mkdir -p "$APP_STAGE/Contents/Helpers"
-cp "$ROOT/proxy/target/release/tether-proxy" "$APP_STAGE/Contents/Helpers/tether-proxy"
+cp "$ROOT/core/proxy/target/release/tether-proxy" "$APP_STAGE/Contents/Helpers/tether-proxy"
 chmod +x "$APP_STAGE/Contents/Helpers/tether-proxy"
 
 echo "==> Normalizing app bundle metadata"

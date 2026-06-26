@@ -1,0 +1,35 @@
+groups:
+  - name: tether-p1-slo
+    rules:
+      - alert: TetherProbeDown
+        expr: probe_success{environment="production",job="tether-probe-production"} == 0
+        for: 2m
+        labels:
+          severity: page
+          service: tether-proxy
+          environment: production
+        annotations:
+          summary: "Tether production probe is down"
+          description: "Blackbox probe to /readyz or /healthz is failing for more than 2m."
+
+      - alert: TetherHighLatencyP95
+        expr: histogram_quantile(0.95, sum by (le, environment, job, instance) (rate(probe_duration_seconds_bucket{environment="production",job="tether-probe-production"}[5m])) ) > 0.35
+        for: 5m
+        labels:
+          severity: page
+          service: tether-proxy
+          environment: production
+        annotations:
+          summary: "Tether production p95 latency elevated"
+          description: "p95 probe latency exceeded 350ms for 5m."
+
+      - alert: TetherStagingProbeDown
+        expr: probe_success{environment="staging",job="tether-probe-staging"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: tether-proxy
+          environment: staging
+        annotations:
+          summary: "Tether staging probe is down"
+          description: "Staging blackbox probe to /readyz or /healthz is failing."

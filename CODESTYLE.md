@@ -2,9 +2,9 @@
 
 This repository contains three main surfaces:
 
-- Swift / SwiftUI macOS app in `ui/`
-- Rust local proxy in `proxy/`
-- Next.js / React / TypeScript web app in `web/`
+- Swift / SwiftUI macOS app in `apps/macos/`
+- Rust local proxy in `core/proxy/`
+- Next.js / React / TypeScript web app in `apps/web/`
 
 Follow the existing local style first. When the existing code is unclear, use this document as the deciding rule.
 
@@ -24,8 +24,7 @@ New implementation code should be self-documenting through names, types, and sma
 single-responsibility functions. Do not add inline comments, doc comments, module comments, or
 placeholder explanations in new or changed code.
 
-When behavior, setup, contracts, or architecture need explanation, update `docs/`, `README.md`,
-OpenAPI artifacts, ADRs, or runbooks in the same change.
+When behavior, setup, contracts, or architecture need explanation, update `apps/web/lib/docs-pages.ts`, `README.md`, OpenAPI artifacts, or runbooks in the same change.
 
 ## Documentation Ownership
 
@@ -53,7 +52,7 @@ Documentation updates should be made in the same patch when:
 Formatting and verification:
 
 ```bash
-xcodebuild -project ui/Tether.xcodeproj -scheme Tether -configuration Debug -destination 'platform=macOS' -derivedDataPath /tmp/TetherDerivedData build CODE_SIGNING_ALLOWED=NO
+xcodebuild -project apps/macos/Tether.xcodeproj -scheme Tether -configuration Debug -destination 'platform=macOS' -derivedDataPath /tmp/TetherDerivedData build CODE_SIGNING_ALLOWED=NO
 ```
 
 ## Rust Proxy
@@ -68,7 +67,7 @@ xcodebuild -project ui/Tether.xcodeproj -scheme Tether -configuration Debug -des
 Formatting and verification:
 
 ```bash
-cd proxy
+cd core/proxy
 cargo fmt --check
 cargo check
 cargo test
@@ -86,7 +85,7 @@ cargo test
 Verification:
 
 ```bash
-cd web
+cd apps/web
 npm run build
 ```
 

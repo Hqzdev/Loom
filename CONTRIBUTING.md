@@ -9,22 +9,22 @@ Before changing code, read [CODESTYLE.md](./CODESTYLE.md). Every contributor is 
 ### Web
 
 ```bash
-cd web
+cd apps/web
 npm install
 npm run dev
 ```
 
-Run a production build before shipping web changes:
+Run a production build before shipping apps/web changes:
 
 ```bash
-cd web
+cd apps/web
 npm run build
 ```
 
 ### Proxy
 
 ```bash
-cd proxy
+cd core/proxy
 cargo check
 cargo test
 ```
@@ -32,14 +32,14 @@ cargo test
 Run formatting checks before shipping Rust changes:
 
 ```bash
-cd proxy
+cd core/proxy
 cargo fmt --check
 ```
 
 ### macOS App
 
 ```bash
-xcodebuild -project ui/Tether.xcodeproj -scheme Tether -configuration Debug -destination 'platform=macOS' -derivedDataPath /tmp/TetherDerivedData build CODE_SIGNING_ALLOWED=NO
+xcodebuild -project apps/macos/Tether.xcodeproj -scheme Tether -configuration Debug -destination 'platform=macOS' -derivedDataPath /tmp/TetherDerivedData build CODE_SIGNING_ALLOWED=NO
 ```
 
 ## Contribution Workflow
@@ -47,7 +47,7 @@ xcodebuild -project ui/Tether.xcodeproj -scheme Tether -configuration Debug -des
 1. Start from a clean understanding of the area you are touching.
 2. Read [CODESTYLE.md](./CODESTYLE.md).
 3. Keep changes scoped to the requested behavior.
-4. Add or update comments and documentation as part of the same change.
+4. Add or update documentation as part of the same change.
 5. Run the relevant verification commands.
 6. Summarize what changed, what was tested, and any remaining risk.
 
@@ -58,21 +58,16 @@ Documentation is not optional follow-up work. If a change affects behavior, setu
 At minimum, update docs when you:
 
 - Add, remove, or rename a command.
-- Change proxy routes, request/response shapes, or trace fields.
+- Change core/proxy routes, request/response shapes, or trace fields.
 - Change app setup, build steps, or environment variables.
 - Add a new UI concept that users or contributors need to understand.
 - Introduce a new convention that future contributors must follow.
-
-## Comment Requirement
-
-Function comments must be written in English. See [CODESTYLE.md](./CODESTYLE.md#function-comments) for the exact rule and examples.
 
 ## Pull Request Checklist
 
 Before opening or handing off a change, confirm:
 
 - [ ] I read and followed [CODESTYLE.md](./CODESTYLE.md).
-- [ ] Every added or changed function/method has an English comment above it.
 - [ ] Documentation was updated where behavior or setup changed.
 - [ ] Relevant build, test, format, or lint commands passed.
 - [ ] No secrets, local trace payloads, API keys, or private user data were committed.

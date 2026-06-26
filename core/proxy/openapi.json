@@ -1,0 +1,167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Tether Local Proxy API",
+    "version": "0.1.0",
+    "description": "Local API exposed by the Tether proxy process."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8080",
+      "description": "Default local proxy"
+    }
+  ],
+  "paths": {
+    "/openapi.json": {
+      "get": {
+        "summary": "Read the OpenAPI contract",
+        "responses": {
+          "200": {
+            "description": "OpenAPI JSON document"
+          }
+        }
+      }
+    },
+    "/api/events/health": {
+      "get": {
+        "summary": "Check event capture health",
+        "responses": {
+          "204": {
+            "description": "Event capture is available"
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "post": {
+        "summary": "Capture a local execution event",
+        "responses": {
+          "204": {
+            "description": "Event captured"
+          }
+        }
+      }
+    },
+    "/api/traces/current": {
+      "get": {
+        "summary": "Read the current trace graph",
+        "responses": {
+          "200": {
+            "description": "Current trace snapshot"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear all traces",
+        "responses": {
+          "204": {
+            "description": "Trace storage cleared"
+          }
+        }
+      }
+    },
+    "/api/traces/current/summary": {
+      "get": {
+        "summary": "Read the current trace summary",
+        "responses": {
+          "200": {
+            "description": "Current trace summary"
+          }
+        }
+      }
+    },
+    "/api/traces/{id}": {
+      "get": {
+        "summary": "Read one trace node",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trace node"
+          }
+        }
+      }
+    },
+    "/api/traces/{id}/output": {
+      "patch": {
+        "summary": "Edit a trace node output",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invalidation result"
+          }
+        }
+      }
+    },
+    "/api/traces/{id}/downstream": {
+      "get": {
+        "summary": "List downstream trace nodes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Downstream node ids"
+          }
+        }
+      }
+    },
+    "/api/traces/{id}/replay": {
+      "post": {
+        "summary": "Replay a retained trace node request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Replay result"
+          },
+          "409": {
+            "description": "Node is not replayable"
+          }
+        }
+      }
+    },
+    "/api/cache": {
+      "delete": {
+        "summary": "Clear cached upstream responses",
+        "responses": {
+          "204": {
+            "description": "Cache cleared"
+          }
+        }
+      }
+    }
+  }
+}

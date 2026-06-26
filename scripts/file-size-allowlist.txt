@@ -2,27 +2,39 @@
 # One repo-relative path per line. Keep this list short and justify each entry.
 #
 # During the modular-monolith migration the god files below are being split phase
-# by phase (see docs/architecture/06-migration-plan.md). Each is removed from this
+# by phase (see apps/web docs). Each is removed from this
 # list as its split lands. Do NOT add new entries without an accompanying reason.
 
-# Phase 2 target — Rust proxy god files (DONE)
-# proxy/src/trace.rs — DONE: split into src/trace/{capture,summarize,store,
+# Phase 2 target — Rust core/proxy god files (DONE)
+# core/proxy/src/trace.rs — DONE: split into src/trace/{capture,summarize,store,
 #   query,node,schema,routes,text}.rs
-# proxy/src/main.rs — DONE: split into src/gateway/* + thin composition root.
-# proxy/src/auth/mod.rs — DONE: split into src/auth/{context,jwt,password,
+# core/proxy/src/main.rs — DONE: split into src/gateway/* + thin composition root.
+# core/proxy/src/auth/mod.rs — DONE: split into src/auth/{context,jwt,password,
 #   routes,types,google,oauth}.rs.
-# proxy/src/settings.rs — DONE: split into src/settings/{profile,app,keys,types}.rs.
+# core/proxy/src/settings.rs — DONE: split into src/settings/{profile,app,keys,types}.rs.
 
 # Release 1.4.5 stabilization — existing oversized files that predate this
 # release cut and should be split after the history-fix release ships.
-proxy/src/context.rs
-proxy/src/trace/query.rs
-proxy/src/trace/query_tests.rs
-proxy/src/trace/replay_store.rs
-proxy/src/trace/routes.rs
-ui/Sources/Core/Models/AgentNode.swift
-ui/Sources/Networking/TraceAPIClient.swift
-ui/Tether/Features/Graph/Viewport/GraphGeometry.swift
-ui/Tether/Features/Inspector/Content/InspectorBody.swift
-ui/Tether/Features/MainLayout/Layout/MainThreePaneActions.swift
-ui/Tether/Features/MainLayout/Stores/TraceStore.swift
+core/proxy/src/context.rs
+core/proxy/src/trace/query.rs
+core/proxy/src/trace/query_tests.rs
+core/proxy/src/trace/replay_store.rs
+core/proxy/src/trace/routes.rs
+apps/macos/Sources/Core/Models/AgentNode.swift
+apps/macos/Sources/Core/Models/AgentContextInputs.swift
+apps/macos/Sources/Networking/TraceAPIClient.swift
+apps/macos/Tether/ContentView.swift
+apps/macos/Tether/Features/Graph/Canvas/GraphCanvas.swift
+apps/macos/Tether/Features/Graph/Viewport/GraphGeometry.swift
+apps/macos/Tether/Features/Inspector/Content/InspectorBody.swift
+apps/macos/Tether/Features/Inspector/Shell/InspectorPane.swift
+apps/macos/Tether/Features/MainLayout/Layout/MainThreePaneActions.swift
+apps/macos/Tether/Features/MainLayout/Layout/MainThreePaneLayoutView.swift
+apps/macos/Tether/Features/MainLayout/Layout/MainThreePaneSupport.swift
+apps/macos/Tether/Features/MainLayout/Stores/TraceStore.swift
+apps/macos/Tether/Shared/WorkspaceAccessStore.swift
+core/proxy/src/auth/context.rs
+core/proxy/src/bin/tether.rs
+core/proxy/src/gateway/mod.rs
+core/proxy/src/security.rs
+core/proxy/src/trace/replay.rs

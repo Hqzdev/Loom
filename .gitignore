@@ -28,7 +28,7 @@ Icon?
 !**/.env.example
 
 # Rust
-/proxy/target/
+/core/proxy/target/
 **/target/
 **/*.rs.bk
 
@@ -40,24 +40,28 @@ Icon?
 *.sqlite-wal
 
 # Node / Next.js
-/web/node_modules/
-/web/node_modules 2/
-/web/.next/
-/web/out/
-/web/coverage/
-/web/.vercel/
-/web/tsconfig.tsbuildinfo
+/apps/web/node_modules/
+/apps/web/node_modules 2/
+/apps/web/.next/
+/apps/web/out/
+/apps/web/coverage/
+/apps/web/.vercel/
+/apps/web/tsconfig.tsbuildinfo
+/apps/linux/node_modules/
+/apps/linux/dist/
+/apps/linux/tsconfig.tsbuildinfo
+/apps/linux/src-tauri/binaries/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
 # Xcode / Swift
-/ui/.build/
-/ui/.swiftpm/
-/ui/**/xcuserdata/
-/ui/**/*.xcuserstate
-/ui/**/DerivedData/
+/apps/macos/.build/
+/apps/macos/.swiftpm/
+/apps/macos/**/xcuserdata/
+/apps/macos/**/*.xcuserstate
+/apps/macos/**/DerivedData/
 DerivedData/
 *.xcscmblueprint
 
@@ -69,6 +73,6 @@ DerivedData/
 *.tar.gz
 
 # Local runtime data
-/web/data/*.ndjson
-!/web/data/.gitkeep
-/web/public/downloads/*.dmg
+/apps/web/data/*.ndjson
+!/apps/web/data/.gitkeep
+/apps/web/public/downloads/*.dmg

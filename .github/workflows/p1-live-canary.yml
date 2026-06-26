@@ -1,0 +1,49 @@
+name: P1 Live Canary and SLO Checks
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canary-checks:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      TETHER_STAGING_BASE_URL: ${{ secrets.TETHER_STAGING_BASE_URL }}
+      TETHER_PRODUCTION_BASE_URL: ${{ secrets.TETHER_PRODUCTION_BASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Staging readiness and latency
+        if: ${{ env.TETHER_STAGING_BASE_URL != '' }}
+        run: |
+          TETHER_BASE_URL="$TETHER_STAGING_BASE_URL" ./scripts/p1-ready-check.sh
+          ./scripts/p1-latency-smoke.sh "$TETHER_STAGING_BASE_URL" /readyz 40 1 5 350
+
+      - name: Production readiness and latency
+        if: ${{ env.TETHER_PRODUCTION_BASE_URL != '' }}
+        run: |
+          TETHER_BASE_URL="$TETHER_PRODUCTION_BASE_URL" ./scripts/p1-ready-check.sh
+          ./scripts/p1-latency-smoke.sh "$TETHER_PRODUCTION_BASE_URL" /readyz 50 1 5 250
+
+      - name: Persist canary summary
+        if: always()
+        run: |
+          mkdir -p artifacts
+          {
+            date -u +%Y-%m-%dT%H:%M:%SZ
+            echo "staging=$TETHER_STAGING_BASE_URL"
+            echo "production=$TETHER_PRODUCTION_BASE_URL"
+          } > artifacts/canary-summary.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p1-canary-${{ github.run_id }}
+          path: artifacts/canary-summary.txt
+          if-no-files-found: warn

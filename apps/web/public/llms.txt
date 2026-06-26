@@ -1,0 +1,73 @@
+# Tether
+
+> Local execution debugger for AI coding agents on macOS and Linux alpha.
+
+Tether is a local execution debugger for AI coding agents. It tracks prompts, command actions, file changes, and failures, and lets you replay from the failing step. It works by running a local HTTP proxy; developers point their AI client's `base_url` at `http://localhost:8080/v1` — that is the single required setup change.
+
+## What Tether does
+
+- Intercepts every LLM request and response in real time without any SDK changes or code instrumentation
+- Shows a run-centric execution graph: prompt, action, file edit, test result, and failed step order
+- Replays past requests and mocks responses for offline testing and debugging without re-running expensive API calls
+- Caches identical prompts in a local SQLite database — repeated calls return in under 1ms at $0 cost
+- Stores prompts, responses, traces, and local proxy data on the developer machine
+- Runs entirely local-first — Tether does not require a hosted workspace for desktop debugging
+
+## Who it's for
+
+Developers building AI coding agents or workflow tools who need to:
+- Find exactly which step changed behavior and broke the run
+- Recover by replaying from a failed action
+- Understand what changed on disk and why tests failed
+- Keep sensitive prompts and keys private during development
+
+## Supported providers and frameworks
+
+Providers: OpenAI, Anthropic (Claude), Ollama, LM Studio, and any OpenAI-compatible API.
+Frameworks: LangChain, LangGraph, LlamaIndex, and any library that accepts a configurable `base_url`.
+
+## How to use Tether (quick setup)
+
+1. Download the macOS app or Linux alpha from https://useTether.dev/#download
+2. Change your AI client's base_url to `http://localhost:8080/v1`
+3. Run your agent as normal — every LLM call appears in the Tether canvas instantly
+
+No account required. No configuration beyond the base_url change.
+
+## Key facts
+
+- Free during alpha; open-source core
+- Requires macOS 13 or later for the native app; Linux alpha artifacts are available from the Linux App workflow
+- Air-gapped by default — zero outbound connections from Tether itself
+- No account, no signup, no cloud required
+- Pricing: Free (see https://useTether.dev/pricing.md for details)
+
+## Frequently asked questions
+
+**How does Tether intercept LLM calls without SDK changes?**
+Tether runs a local HTTP proxy. You point your AI client's base_url at http://localhost:8080/v1 — that's the only change. Tether forwards requests to the real provider and records everything locally.
+
+**Does Tether send my prompts or API keys to the cloud?**
+No. Tether is fully air-gapped. Prompts and responses stay on your machine. The macOS app uses Keychain-aware secret storage, and the Linux alpha keeps the same local proxy model.
+
+**Which LLM providers does Tether support?**
+OpenAI, Anthropic, Ollama, LM Studio, and any provider that accepts an OpenAI-compatible base_url. It also works with LangChain, LangGraph, LlamaIndex, and similar frameworks.
+
+**What is recovery replay?**
+Recovery replay lets you jump to the failing node, edit the action or response, and run only the affected branch without re-running earlier steps.
+
+**How does the local cache work?**
+Tether stores request/response pairs in a local SQLite database. When the same prompt is sent again, Tether returns the cached response in under 1ms at $0 cost instead of calling the provider.
+
+**Is Tether still free?**
+Yes. Tether is free during the alpha period. The core proxy is open source.
+
+**How is Tether different from LangSmith or Weights & Biases?**
+LangSmith and W&B send your traces to cloud servers. Tether keeps debugging records on your machine. There is no cloud workspace requirement, no account requirement, and no Tether-hosted trace copy. Tether is designed for developers who need full privacy during development.
+
+## Links
+
+- Homepage: https://useTether.dev
+- Download: https://useTether.dev/#download
+- Features: https://useTether.dev/#features
+- Pricing: https://useTether.dev/pricing.md

@@ -1,0 +1,53 @@
+name: P1 Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "target environment"
+        required: true
+        default: production
+      release_tag:
+        description: "release tag to rollback to"
+        required: true
+      release_base_url:
+        description: "health base url for rollback validation"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Fetch release artifact
+        run: |
+          gh release download "${{ github.event.inputs.release_tag }}" --pattern "Tether.dmg" --dir dist
+          ./scripts/p1-deploy-manifest.sh "${{ github.event.inputs.environment }}" dist/Tether.dmg dist/deploy-manifest.rollback.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Validate rollback target
+        run: |
+          if [[ -z "${{ github.event.inputs.release_base_url }}" ]]; then
+            echo "rollback artifact fetched. set release_base_url to run readiness and latency validation."
+            exit 0
+          fi
+          base_url="${{ github.event.inputs.release_base_url }}"
+          TETHER_BASE_URL="$base_url" ./scripts/p1-ready-check.sh
+          ./scripts/p1-latency-smoke.sh "$base_url" /readyz 50 1 5 250
+      - name: Publish rollback evidence
+        run: |
+          echo "rollback_release_tag=${{ github.event.inputs.release_tag }}" > dist/rollback.env
+          echo "rollback_environment=${{ github.event.inputs.environment }}" >> dist/rollback.env
+          echo "rollback_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> dist/rollback.env
+          cat dist/rollback.env
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p1-rollback-evidence-${{ github.run_id }}
+          path: dist/rollback.env
+          if-no-files-found: error

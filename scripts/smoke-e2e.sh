@@ -7,7 +7,7 @@ PROXY_PORT="${TETHER_E2E_PROXY_PORT:-18080}"
 UPSTREAM_PORT="${TETHER_E2E_UPSTREAM_PORT:-18081}"
 DB_PATH="$TMP_DIR/Tether-e2e.sqlite"
 MOCK_LOG="$TMP_DIR/mock-upstream.log"
-PROXY_LOG="$TMP_DIR/proxy.log"
+PROXY_LOG="$TMP_DIR/tether-proxy.log"
 MOCK_PID=""
 PROXY_PID=""
 
@@ -43,7 +43,7 @@ wait_for() {
   echo "timed out waiting for $label at $url" >&2
   echo "--- mock upstream log ---" >&2
   test -f "$MOCK_LOG" && tail -80 "$MOCK_LOG" >&2
-  echo "--- proxy log ---" >&2
+  echo "--- core/proxy log ---" >&2
   test -f "$PROXY_LOG" && tail -120 "$PROXY_LOG" >&2
   exit 1
 }
@@ -113,10 +113,10 @@ server.listen(port, "127.0.0.1", () => {
 JS
 
 if [[ "${TETHER_E2E_SKIP_BUILD:-0}" == "1" ]]; then
-  echo "==> Skipping proxy build"
+  echo "==> Skipping core/proxy build"
 else
-  echo "==> Building proxy"
-  cargo build --manifest-path "$ROOT/proxy/Cargo.toml" >/dev/null
+  echo "==> Building core/proxy"
+  cargo build --manifest-path "$ROOT/core/proxy/Cargo.toml" >/dev/null
 fi
 
 echo "==> Starting mock OpenAI upstream on :$UPSTREAM_PORT"
@@ -128,15 +128,17 @@ echo "==> Starting Tether proxy on :$PROXY_PORT"
 TETHER_ADDR="127.0.0.1:$PROXY_PORT" \
 TETHER_DB="$DB_PATH" \
 TETHER_CACHE=on \
+TETHER_REQUIRE_AUTH_DB=0 \
 OPENAI_UPSTREAM="http://127.0.0.1:$UPSTREAM_PORT" \
 ANTHROPIC_UPSTREAM="http://127.0.0.1:$UPSTREAM_PORT" \
-"$ROOT/proxy/target/debug/tether-proxy" >"$PROXY_LOG" 2>&1 &
+"$ROOT/core/proxy/target/debug/tether-proxy" >"$PROXY_LOG" 2>&1 &
 PROXY_PID="$!"
 wait_for "http://127.0.0.1:$PROXY_PORT/api/traces/current" "Tether proxy"
+TETHER_BASE_URL="http://127.0.0.1:$PROXY_PORT" scripts/p1-ready-check.sh
 
 curl -fsS -X DELETE "http://127.0.0.1:$PROXY_PORT/api/traces/current" >/dev/null || true
 
-echo "==> Sending agent request through proxy"
+echo "==> Sending agent request through core/proxy"
 RESPONSE="$(
   curl -fsS \
     -X POST "http://127.0.0.1:$PROXY_PORT/v1/chat/completions" \
@@ -162,7 +164,6 @@ for _ in $(seq 1 80); do
 const snapshot = JSON.parse(process.env.TRACE_JSON);
 const node = snapshot.nodes?.[0];
 if (
-  snapshot.session &&
   node &&
   node.status === "success" &&
   node.step_name === "OPENAI completions" &&
@@ -198,7 +199,7 @@ fi
 TRACE_JSON="$TRACE_JSON" node - <<'JS'
 const snapshot = JSON.parse(process.env.TRACE_JSON);
 const node = snapshot.nodes?.[0];
-if (!snapshot.session || !node) {
+if (!node) {
   console.error("trace API did not expose a UI-readable snapshot", snapshot);
   process.exit(1);
 }

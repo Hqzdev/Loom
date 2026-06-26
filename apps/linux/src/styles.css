@@ -1,0 +1,870 @@
+:root {
+  color: #24252a;
+  background: #f7f7f8;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 720px;
+  min-height: 100vh;
+  background: #f7f7f8;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+.appShell {
+  display: grid;
+  grid-template-columns: minmax(220px, min(var(--left-sidebar-width, 280px), 30vw)) 6px minmax(280px, 1fr) 6px minmax(280px, min(var(--right-sidebar-width, 380px), 36vw));
+  width: 100vw;
+  height: 100vh;
+  background: #f8f8f9;
+  overflow: hidden;
+}
+
+.resizeHandle {
+  position: relative;
+  z-index: 8;
+  background: #fbfbfc;
+  cursor: col-resize;
+}
+
+.resizeHandle::before {
+  position: absolute;
+  inset: 0 2px;
+  content: "";
+  background: #dedfe4;
+}
+
+.resizeHandle:hover::before,
+.resizeHandle:active::before {
+  background: #8178ff;
+}
+
+.sidebar {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px 16px 14px;
+  background: #fbfbfc;
+  border-right: 1px solid #dedfe4;
+}
+
+.agentSummary {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 46px;
+  padding: 0 14px;
+  color: #16b978;
+  background: #e0f5ee;
+  border: 1px solid #c5eadf;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.agentSummaryIcon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: #16b978;
+  border: 1px solid #8edcc2;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.callFilter {
+  position: relative;
+  display: block;
+}
+
+.callFilter span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.callFilter input {
+  width: 100%;
+  height: 38px;
+  padding: 0 13px;
+  color: #24252a;
+  background: #ffffff;
+  border: 1px solid #d7d8df;
+  border-radius: 8px;
+  outline: none;
+  box-shadow: inset 0 1px 1px rgba(20, 21, 25, 0.03);
+}
+
+.callFilter input:focus,
+.workspaceField input:focus {
+  border-color: #7067ff;
+  box-shadow: 0 0 0 3px rgba(112, 103, 255, 0.14);
+}
+
+.callsPanel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.callsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 7px 8px;
+  color: #787b86;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.callsList {
+  display: grid;
+  gap: 6px;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.callRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr) auto;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 10px 10px 0;
+  color: #24252a;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.callRow.selected {
+  background: #ececf1;
+  border-color: #dbdce4;
+}
+
+.callStatusBar {
+  width: 3px;
+  height: 38px;
+  margin-left: 7px;
+  align-self: center;
+  border-radius: 999px;
+  background: #20cf87;
+}
+
+.statusBarerror {
+  background: #f02f87;
+}
+
+.statusBarrunning {
+  background: #f2b43f;
+}
+
+.statusBarcached,
+.statusBarstale,
+.statusBarunknown {
+  background: #9aa0ad;
+}
+
+.callContent {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.callTitle {
+  min-width: 0;
+  overflow: hidden;
+  color: #24252a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.callMeta,
+.inspectorChips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sourcePill,
+.modelPill {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  height: 18px;
+  padding: 0 8px;
+  overflow: hidden;
+  border-radius: 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.sourcePill {
+  color: #5b55ef;
+  background: #e9e7ff;
+}
+
+.modelPill {
+  color: #9a65ff;
+  background: #f0e8ff;
+}
+
+.sourcePill.compact {
+  justify-self: start;
+}
+
+.callLatency {
+  color: #9a9da7;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.emptyCalls {
+  display: grid;
+  gap: 6px;
+  padding: 18px 8px;
+  color: #8b8e98;
+  font-size: 13px;
+}
+
+.emptyCalls strong {
+  color: #303138;
+}
+
+.settingsPanel {
+  display: grid;
+  gap: 12px;
+  align-self: end;
+  padding-top: 14px;
+  border-top: 1px solid #e4e5ea;
+}
+
+.eyebrow,
+.subtleLabel {
+  color: #8b8e98;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 7px 10px;
+  color: #767984;
+  font-size: 12px;
+}
+
+.settingsGrid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #303138;
+}
+
+.settingsActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.secondaryButton,
+.primaryButton {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.secondaryButton {
+  color: #3b3d44;
+  background: #ffffff;
+  border: 1px solid #d7d8df;
+}
+
+.secondaryButton:disabled {
+  color: #a7aab3;
+  background: #f2f3f5;
+}
+
+.workspaceField {
+  display: grid;
+  gap: 7px;
+  color: #767984;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.workspaceField input {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 11px;
+  color: #24252a;
+  background: #ffffff;
+  border: 1px solid #d7d8df;
+  border-radius: 8px;
+  outline: none;
+}
+
+.graphPane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  background: #ffffff;
+}
+
+.traceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 86px;
+  padding: 18px 26px;
+  border-bottom: 1px solid #dedfe4;
+}
+
+.traceTitleGroup {
+  min-width: 0;
+}
+
+.traceTitleGroup h1 {
+  min-width: 0;
+  overflow: hidden;
+  color: #24252a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.traceMetrics {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.metricPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  color: #9a9da7;
+  background: #f1f1f4;
+  border: 1px solid #e2e3e8;
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.metricPill strong {
+  color: #303138;
+  font-size: 14px;
+}
+
+.metricPill.danger strong {
+  color: #f02f87;
+}
+
+.graphSurface {
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  cursor: grab;
+  background:
+    linear-gradient(#ffffff, #ffffff),
+    radial-gradient(circle at center, rgba(112, 103, 255, 0.1), transparent 42%);
+  overscroll-behavior: contain;
+}
+
+.graphSurface:active {
+  cursor: grabbing;
+}
+
+.emptyState {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  color: #8b8e98;
+  text-align: center;
+  font-size: 15px;
+}
+
+.emptyState strong {
+  color: #303138;
+  font-size: 16px;
+}
+
+.graphWorld {
+  position: relative;
+  width: 2200px;
+  height: 1400px;
+}
+
+.graphEdges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.graphEdgeShadow {
+  fill: none;
+  stroke: rgba(112, 103, 255, 0.12);
+  stroke-linecap: round;
+  stroke-width: 8;
+}
+
+.graphEdge {
+  fill: none;
+  stroke: #8178ff;
+  stroke-linecap: round;
+  stroke-width: 2.5;
+}
+
+.graphEdgePort {
+  fill: #ffffff;
+  stroke: #8178ff;
+  stroke-width: 2;
+}
+
+.graphNodeCard {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 9px;
+  width: 250px;
+  min-height: 108px;
+  padding: 13px 14px 12px;
+  color: #24252a;
+  text-align: left;
+  background: linear-gradient(180deg, #f7f4ff 0%, #ffffff 100%);
+  border: 2px solid #7067ff;
+  border-radius: 10px;
+  box-shadow: 0 14px 34px rgba(72, 63, 175, 0.14);
+  cursor: grab;
+  touch-action: none;
+}
+
+.graphNodeCard:active {
+  cursor: grabbing;
+}
+
+.graphNodeCard.selected {
+  border-color: #6258ff;
+  box-shadow: 0 16px 40px rgba(72, 63, 175, 0.2), 0 0 0 3px rgba(112, 103, 255, 0.14);
+}
+
+.nodeDot {
+  width: 9px;
+  height: 9px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: #20cf87;
+}
+
+.statusDoterror {
+  background: #f02f87;
+}
+
+.statusDotrunning {
+  background: #f2b43f;
+}
+
+.statusDotcached,
+.statusDotstale,
+.statusDotunknown {
+  background: #9aa0ad;
+}
+
+.graphNodeBody {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.graphNodeBody strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #24252a;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.graphNodeBody > span:not(.sourcePill) {
+  overflow: hidden;
+  color: #777a84;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.graphNodeMeter {
+  grid-column: 1 / -1;
+  height: 3px;
+  margin-top: 5px;
+  background: #f02f87;
+  border-radius: 999px;
+}
+
+.graphNodeStats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #e2e0f3;
+}
+
+.graphNodeStats span {
+  display: grid;
+  gap: 4px;
+}
+
+.graphNodeStats small {
+  color: #9a9da7;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.graphNodeStats strong {
+  color: #303138;
+  font-size: 11px;
+}
+
+.rightRail {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-width: 0;
+  background: #fbfbfc;
+  border-left: 1px solid #dedfe4;
+}
+
+.inspectorPane {
+  min-height: 0;
+  overflow: auto;
+}
+
+.inspectorHeader {
+  display: grid;
+  gap: 12px;
+  min-height: 118px;
+  padding: 22px 22px 12px;
+  border-bottom: 1px solid #dedfe4;
+}
+
+.inspectorTitleRow {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: start;
+  min-width: 0;
+}
+
+.inspectorHeader h2 {
+  min-width: 0;
+  overflow: hidden;
+  color: #24252a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.statusPill {
+  flex: 0 0 auto;
+  height: 24px;
+  padding: 0 10px;
+  color: #4a4d56;
+  background: #f1f1f4;
+  border: 1px solid #e2e3e8;
+  border-radius: 999px;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 22px;
+}
+
+.statusPillerror {
+  color: #f02f87;
+  background: #fff0f7;
+  border-color: #ffd2e8;
+}
+
+.statusPillrunning {
+  color: #9b6b00;
+  background: #fff7df;
+  border-color: #ffe3a3;
+}
+
+.statusPillsuccess {
+  color: #129866;
+  background: #e9fbf4;
+  border-color: #c9efdf;
+}
+
+.inspectorTabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 38px;
+  padding: 3px;
+  background: #f4f4f6;
+  border: 1px solid #dedfe4;
+  border-radius: 9px;
+}
+
+.inspectorTabs button {
+  min-width: 0;
+  color: #7a7d87;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.inspectorTabs button.active {
+  color: #6258ff;
+  background: #ebe9ff;
+  box-shadow: inset 0 0 0 1px #8178ff;
+}
+
+.emptyInspector {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  min-height: 360px;
+  padding: 28px;
+  color: #8b8e98;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.emptyInspector strong {
+  color: #303138;
+}
+
+.inspectorSections {
+  display: grid;
+}
+
+.inspectorSections section {
+  padding: 14px 18px;
+  border-bottom: 1px solid #e4e5ea;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.sectionHeader span {
+  height: 20px;
+  padding: 0 8px;
+  color: #8b8e98;
+  background: #f1f1f4;
+  border: 1px solid #e2e3e8;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 18px;
+}
+
+.inspectorSections h3 {
+  color: #777a84;
+  font: 800 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+}
+
+.inspectorSections h4 {
+  margin-top: 18px;
+  color: #777a84;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 10px 12px;
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+dt {
+  color: #8b8e98;
+  font-weight: 800;
+}
+
+dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #3b3d44;
+  font-weight: 650;
+}
+
+pre {
+  max-height: 220px;
+  margin: 10px 0 0;
+  overflow: auto;
+  color: #3b3d44;
+  white-space: pre-wrap;
+  font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.changedFileList {
+  display: grid;
+  margin-top: 12px;
+  border-top: 1px solid #e4e5ea;
+}
+
+.changedFileRow {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 34px;
+  border-bottom: 1px solid #e4e5ea;
+  font-size: 12px;
+}
+
+.changedFileRow span {
+  color: #16b978;
+  font-weight: 900;
+}
+
+.changedFileRow strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #303138;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.changedFileRow em {
+  color: #8b8e98;
+  font-style: normal;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.replayPanel {
+  display: grid;
+  gap: 12px;
+  padding: 18px 22px 20px;
+  background: #fbfbfc;
+  border-top: 1px solid #dedfe4;
+}
+
+.replayPanel p {
+  color: #777a84;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.replayStack {
+  display: grid;
+  gap: 12px;
+}
+
+.primaryButton {
+  width: 100%;
+  color: #ffffff;
+  background: #191a20;
+  border: 1px solid #191a20;
+}
+
+.primaryButton:disabled {
+  color: #a7aab3;
+  background: #f2f3f5;
+  border-color: #d7d8df;
+}
+
+.mutedText,
+.errorText {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mutedText {
+  color: #777a84;
+}
+
+.errorText {
+  color: #f02f87;
+}
+
+.resultGrid {
+  margin-top: 0;
+}
+
+@media (max-width: 1180px) {
+  body {
+    min-width: 720px;
+  }
+
+  .appShell {
+    grid-template-columns: minmax(220px, min(var(--left-sidebar-width, 260px), 30vw)) 6px minmax(280px, 1fr) 6px minmax(280px, min(var(--right-sidebar-width, 340px), 36vw));
+  }
+
+  .traceHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .traceMetrics {
+    justify-content: flex-start;
+  }
+}

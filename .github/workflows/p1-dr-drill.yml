@@ -1,0 +1,23 @@
+name: P1 DR Drill
+
+on:
+  schedule:
+    - cron: "30 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  dr-drill:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tooling
+        run: sudo apt-get update && sudo apt-get install -y sqlite3 curl
+      - name: Build core/proxy
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build release core/proxy
+        run: cargo build --manifest-path core/proxy/Cargo.toml
+      - name: Run backup
+        run: ./scripts/p1-backup.sh
+      - name: Run restore drill
+        run: ./scripts/p1-restore-drill.sh
