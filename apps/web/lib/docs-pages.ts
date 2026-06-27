@@ -48,6 +48,12 @@ export const DOCS_NAV_GROUPS: DocsNavGroup[] = [
     ],
   },
   {
+    title: "Roadmap",
+    links: [
+      { slug: "roadmap", label: "Product roadmap" },
+    ],
+  },
+  {
     title: "Architecture",
     links: [
       { slug: "architecture-overview", label: "System overview" },
@@ -452,6 +458,92 @@ export const DOCS_PAGES: DocsPage[] = [
               "LLM requests and responses with provider metadata.",
               "Tool calls, file reads, file writes, shell commands, test runs, git diffs, and errors.",
               "Replay and rollback evidence where the selected source supports it.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "roadmap",
+    title: "Product roadmap",
+    category: "Roadmap",
+    description:
+      "What Tether is building next across capture, recovery, desktop clients, integrations, and release quality.",
+    sections: [
+      {
+        title: "Roadmap principle",
+        blocks: [
+          {
+            kind: "paragraph",
+            text:
+              "Tether is not trying to become a hosted agent workspace. The product direction is a local execution debugger for AI coding agents: capture the real run, preserve exact evidence, show the failure path, and make recovery faster.",
+          },
+          {
+            kind: "list",
+            items: [
+              "Prefer local execution evidence over generic analytics.",
+              "Keep prompt, action, file diff, command, test, and recovery data connected.",
+              "Ship debugger controls only when the source can support them honestly.",
+              "Avoid fake replay promises for events that only have log evidence.",
+            ],
+          },
+        ],
+      },
+      {
+        title: "Now",
+        blocks: [
+          {
+            kind: "table",
+            headers: ["Area", "Focus", "Outcome"],
+            rows: [
+              ["Execution capture", "Codex logs, proxy-captured requests, local trace storage, and normalized graph nodes.", "A developer can see the prompt, model request, response, metadata, and source context for a local agent run."],
+              ["Desktop debuggers", "macOS and Linux clients with graph selection, inspector panes, settings, local proxy control, and source-log ingestion.", "The desktop apps are the primary local debugging surfaces."],
+              ["Recovery evidence", "Replay for supported proxy-captured requests and rollback context for file-changing nodes.", "A failed branch has enough evidence for targeted recovery instead of blind reruns."],
+              ["Public docs", "Architecture, supported agents, commands, privacy, release workflow, and API reference.", "The site explains the real product shape instead of presenting Tether as a generic observability tool."],
+            ],
+          },
+        ],
+      },
+      {
+        title: "Next",
+        blocks: [
+          {
+            kind: "table",
+            headers: ["Area", "Planned work", "Why it matters"],
+            rows: [
+              ["Capture wrapper", "Harden tether capture -- <agent command> across local coding-agent workflows.", "The wrapper is the cleanest path to full prompt, process, shell, file, and test attribution."],
+              ["Failure-first graph", "Make failed commands, failed tests, changed files, and stale downstream branches easier to scan.", "The graph should answer where the run broke before it asks users to inspect every node."],
+              ["Replay boundaries", "Make replay availability explicit per source, request type, and provider route.", "A debugger loses trust if it shows controls that cannot actually recover the selected node."],
+              ["Adapter coverage", "Deepen Codex, Claude Code, LangChain, LangGraph, OpenAI-compatible, and custom CLI ingestion.", "Tether should follow the agent stack developers already use instead of forcing a new runtime."],
+            ],
+          },
+        ],
+      },
+      {
+        title: "Later",
+        blocks: [
+          {
+            kind: "table",
+            headers: ["Area", "Direction", "Constraint"],
+            rows: [
+              ["Windows client", "Build a desktop client around the same local proxy and execution graph contract.", "Do not add placeholder runtime code until it can build and run."],
+              ["Team evidence export", "Export traces, failure reports, and recovery context for issue trackers, pull requests, or incident notes.", "Exports must avoid leaking secrets and must preserve exact file and command attribution."],
+              ["Release quality", "Tighten signing, notarization, update checks, smoke tests, and packaged helper verification.", "Distribution quality has to catch up before broad public release."],
+            ],
+          },
+        ],
+      },
+      {
+        title: "Not on the roadmap",
+        blocks: [
+          {
+            kind: "list",
+            items: [
+              "A hosted web IDE as the main product surface.",
+              "Generic LLM observability dashboards detached from local file, command, and test evidence.",
+              "Provider-specific lock-in that makes Tether useful only for one model vendor.",
+              "Replay buttons for sources that cannot safely replay the selected execution boundary.",
             ],
           },
         ],

@@ -7,7 +7,7 @@ import { trackEvent } from "@/lib/analytics";
 import { NODES, type NodeStatus, type TraceNode } from "@/lib/data";
 
 const MACOS_DOWNLOAD_HREF = "https://github.com/Hqzdev/Tether/releases/latest/download/Tether.dmg";
-const LINUX_DOWNLOAD_HREF = "https://github.com/Hqzdev/Tether/actions/workflows/linux-app.yml?query=branch%3Amain";
+const LINUX_DOWNLOAD_HREF = "https://github.com/Hqzdev/Tether/releases";
 
 
 type LandingIconName = IconName;
@@ -958,7 +958,7 @@ export default function TetherLanding() {
                   target="_blank"
                 >
                   <LandingIcon name="apple-finder" />
-                  Install macOS alpha
+                  Install macOS release
                 </a>
                 <a
                   className="btn btn-secondary"
@@ -976,7 +976,7 @@ export default function TetherLanding() {
                   Download Linux alpha
                 </a>
               </div>
-              <p className="download-note">macOS downloads the latest DMG. Linux opens the latest workflow artifacts for AppImage and deb builds.</p>
+              <p className="download-note">macOS downloads the latest DMG directly. Linux opens the GitHub Releases page for AppImage and deb builds.</p>
             </div>
             <div className="cta-row secondary-downloads">
               <a

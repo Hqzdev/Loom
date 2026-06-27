@@ -1,5 +1,7 @@
 "use client";
 
+import { ChatGptIcon, ClaudeIcon, PerplexityAiIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
@@ -111,7 +113,7 @@ function DocsTopNav() {
       </nav>
       <a className={styles.topInstall} href={RELEASE_HREF} rel="noreferrer" target="_blank">
         <Icon name="apple-finder" />
-        Install v1.2
+        Download
       </a>
     </header>
   );
@@ -211,7 +213,7 @@ function DocsCopyMenu({
           </a>
           <a href={aiQuestionHref("chatgpt", pageUrl, page)} rel="noreferrer" target="_blank">
             <span className={styles.copyMenuIcon}>
-              <Icon name="spark" size={22} />
+              <HugeiconsIcon aria-hidden="true" color="currentColor" icon={ChatGptIcon} size={22} strokeWidth={1.8} />
             </span>
             <span>
               <strong>
@@ -222,7 +224,7 @@ function DocsCopyMenu({
           </a>
           <a href={aiQuestionHref("claude", pageUrl, page)} rel="noreferrer" target="_blank">
             <span className={styles.copyMenuIcon}>
-              <Icon name="feather" size={22} />
+              <HugeiconsIcon aria-hidden="true" color="currentColor" icon={ClaudeIcon} size={22} strokeWidth={1.8} />
             </span>
             <span>
               <strong>
@@ -233,7 +235,7 @@ function DocsCopyMenu({
           </a>
           <a href={aiQuestionHref("perplexity", pageUrl, page)} rel="noreferrer" target="_blank">
             <span className={styles.copyMenuIcon}>
-              <Icon name="circle-nodes" size={22} />
+              <HugeiconsIcon aria-hidden="true" color="currentColor" icon={PerplexityAiIcon} size={22} strokeWidth={1.8} />
             </span>
             <span>
               <strong>
@@ -472,6 +474,10 @@ function PageToc({
   onCopy: (value: string, copyKey: string) => void;
   page: DocsPageData;
 }) {
+  const copyMarkdownPage = () => {
+    onCopy(docsPageToMarkdown(page), `resource-page-${page.slug}`);
+  };
+
   const copyPageLink = () => {
     const href = new URL(docsHref(page.slug), window.location.origin).toString();
     onCopy(href, `page-link-${page.slug}`);
@@ -502,9 +508,13 @@ function PageToc({
       </nav>
       <div className={styles.resourcePanel}>
         <span>Resources</span>
+        <button type="button" onClick={copyMarkdownPage}>
+          <Icon name={copiedKey === `resource-page-${page.slug}` ? "check" : "file-lines"} />
+          {copiedKey === `resource-page-${page.slug}` ? "Copied page" : "Copy page"}
+        </button>
         <a href={RELEASE_HREF} rel="noreferrer" target="_blank">
           <Icon name="apple-finder" />
-          Install v1.2
+          Download
         </a>
         <Link href="/docs/api-reference">
           <Icon name="file-lines" />
@@ -644,7 +654,7 @@ export function DocsPage({ page }: { page: DocsPageData }) {
             <div className={styles.heroActions}>
               <a className={styles.primaryAction} href={RELEASE_HREF} rel="noreferrer" target="_blank">
                 <Icon name="apple-finder" />
-                Install v1.2
+                Download
               </a>
               <Link className={styles.secondaryAction} href="/docs/install">
                 Setup steps
@@ -656,8 +666,8 @@ export function DocsPage({ page }: { page: DocsPageData }) {
             </div>
             <dl className={styles.metaStrip}>
               <div>
-                <dt>Version</dt>
-                <dd>v1.2 alpha</dd>
+                <dt>Release</dt>
+                <dd>Alpha channel</dd>
               </div>
               <div>
                 <dt>Runtime</dt>
