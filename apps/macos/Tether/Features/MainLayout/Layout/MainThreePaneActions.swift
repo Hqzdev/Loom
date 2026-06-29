@@ -30,7 +30,7 @@ extension MainThreePaneLayoutView {
         if node.cacheStatus == "codex-log" {
             return TraceInvalidationResult(
                 nodeId: node.id,
-                reason: "local-codex-log-mock",
+                reason: "local-agent-log-mock",
                 previousOutputHash: node.outputHash,
                 outputHash: AgentNode.shortHash(output),
                 invalidated: []
@@ -49,7 +49,7 @@ extension MainThreePaneLayoutView {
             return (0..<max(1, count)).map { _ in
                 TraceReplayResult(
                     nodeId: node.id,
-                    reason: "local-codex-log-not-replayable",
+                    reason: "local-agent-log-not-replayable",
                     previousOutputHash: node.outputHash,
                     outputHash: node.outputHash,
                     statusCode: 204,

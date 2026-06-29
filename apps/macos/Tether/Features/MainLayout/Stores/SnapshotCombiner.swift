@@ -2,7 +2,7 @@ import Core
 import Foundation
 
 extension TraceStore {
-    /// Combines proxy and Codex snapshots into one ordered multi-agent timeline.
+    /// Combines proxy and local agent snapshots into one ordered multi-agent timeline.
     func combinedSnapshot(
         proxySnapshot: TraceSnapshot?,
         codexSnapshot: TraceSnapshot?
@@ -47,7 +47,7 @@ extension TraceStore {
     /// Orders preferred agent names before any unknown local observer names.
     func orderedAgentNames(from nodes: [AgentNode]) -> [String] {
         let names = Set(nodes.map(\.agentName))
-        let preferredOrder = ["Codex", "Claude Code"]
+        let preferredOrder = ["Local Agent", "Claude Code"]
         let preferredNames = preferredOrder.filter(names.contains)
         let remainingNames = names
             .subtracting(preferredNames)

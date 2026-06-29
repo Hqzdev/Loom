@@ -21,7 +21,7 @@ public extension AgentNode {
 
     var graphGroupTitle: String {
         if cacheStatus.lowercased() == "codex-log" {
-            return "Codex"
+            return "Local Agent"
         }
 
         if isReplay {

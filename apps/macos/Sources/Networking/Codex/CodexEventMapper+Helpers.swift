@@ -32,7 +32,7 @@ extension CodexLogObserver {
         }
     }
 
-    /// Produces the terminal draft when Codex emits a completion event.
+    /// Produces the terminal draft when the local agent emits a completion event.
     nonisolated static func completedDraft(
         from event: CodexResponseEventRow,
         active: CodexResponseDraft?,
@@ -44,7 +44,7 @@ extension CodexLogObserver {
             id: event.responseId ?? "codex-\(event.id)",
             startedAt: event.responseCreatedAt ?? event.ts,
             completedAt: nil,
-            model: event.model ?? thread.model ?? "codex",
+            model: event.model ?? thread.model ?? "agent",
             status: .success,
             tokensIn: 0,
             tokensOut: 0,
@@ -76,24 +76,24 @@ extension CodexLogObserver {
         }
 
         if draft.status == .running {
-            return "Codex response is streaming from Terminal."
+            return "Agent response is streaming from Terminal."
         }
 
         if let errorMessage = draft.errorMessage, !errorMessage.isEmpty {
             return errorMessage
         }
 
-        return "Codex response completed. Full output text was not present in the local event window."
+        return "Agent response completed. Full output text was not present in the local event window."
     }
 
-    /// Builds an error payload for failed Codex responses.
+    /// Builds an error payload for failed local responses.
     nonisolated static func errorPayload(for draft: CodexResponseDraft) -> AgentError? {
         guard draft.status == .error else { return nil }
 
         return AgentError(
             code: "codex.response",
-            message: "Codex response failed",
-            detail: draft.errorMessage ?? "The local Codex log marked this response as failed."
+            message: "Agent response failed",
+            detail: draft.errorMessage ?? "The local agent log marked this response as failed."
         )
     }
 

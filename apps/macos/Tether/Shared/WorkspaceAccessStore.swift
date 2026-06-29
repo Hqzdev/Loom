@@ -73,8 +73,8 @@ final class WorkspaceAccessStore: ObservableObject {
     func requestCodexAccess() {
         defaults.set(true, forKey: Self.codexPromptedKey)
         requestDirectory(
-            title: "Grant Tether Codex log access",
-            message: "Choose your .codex folder so Tether can observe Terminal Codex runs.",
+            title: "Grant Tether local log access",
+            message: "Choose the local agent log folder so Tether can observe supported terminal runs.",
             defaultURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".codex", isDirectory: true),
             bookmarkKey: Self.codexBookmarkKey,
             pathKey: Self.codexPathKey

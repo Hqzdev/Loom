@@ -1,7 +1,7 @@
 import Core
 import Foundation
 
-/// Error raised when the local Codex SQLite query cannot be executed.
+/// Error raised when the local agent SQLite query cannot be executed.
 enum CodexLogObserverError: LocalizedError {
     case sqlite(String)
 
@@ -9,12 +9,12 @@ enum CodexLogObserverError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .sqlite(let message):
-            return "Codex log query failed: \(message)"
+            return "Local log query failed: \(message)"
         }
     }
 }
 
-/// Thread metadata row from the Codex state database.
+/// Thread metadata row from the local agent state database.
 struct CodexThreadRow: Decodable {
     let id: String
     let title: String?
@@ -39,7 +39,7 @@ struct CodexThreadRow: Decodable {
     }
 }
 
-/// Parsed response event row from the Codex feedback log database.
+/// Parsed response event row from the local agent feedback log database.
 struct CodexResponseEventRow: Decodable {
     let id: Int
     let ts: Int
@@ -84,12 +84,12 @@ struct CodexResponseEventRow: Decodable {
     }
 }
 
-/// Lightweight row used to record the latest Codex response event id.
+/// Lightweight row used to record the latest local response event id.
 struct CodexLogWatermarkRow: Decodable {
     let id: Int
 }
 
-/// Mutable response accumulator used while folding Codex websocket events.
+/// Mutable response accumulator used while folding local agent websocket events.
 struct CodexResponseDraft {
     var id: String
     var startedAt: Int

@@ -10,7 +10,7 @@ struct WelcomeFeatureGrid: View {
             WelcomeFeatureCard(
                 systemImage: "terminal",
                 title: "Adapter-native",
-                description: "Capture Codex, Claude Code, LangChain, LangGraph, OpenAI-compatible, and custom CLI agents.",
+                description: "Capture supported agent CLIs, frameworks, OpenAI-compatible traffic, and custom local workflows.",
                 palette: palette
             )
             .welcomeReveal(hasAppeared, delay: 0.15)

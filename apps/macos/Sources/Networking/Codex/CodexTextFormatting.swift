@@ -49,7 +49,7 @@ extension CodexLogObserver {
         return formatter.string(from: Date(timeIntervalSince1970: TimeInterval(seconds)))
     }
 
-    /// Quotes strings for the small SQLite queries against local Codex logs.
+    /// Quotes strings for the small SQLite queries against local agent logs.
     nonisolated static func sqlQuote(_ value: String) -> String {
         "'\(value.replacingOccurrences(of: "'", with: "''"))'"
     }

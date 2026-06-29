@@ -1,7 +1,7 @@
 import Foundation
 
 extension CodexLogObserver {
-    /// Loads the newest non-archived Codex thread from the state database.
+    /// Loads the newest non-archived local agent thread from the state database.
     nonisolated static func latestThread(from databasePath: String) throws -> CodexThreadRow? {
         let query = """
         SELECT
@@ -23,7 +23,7 @@ extension CodexLogObserver {
         return try CodexDatabase.runJSON(databasePath: databasePath, query: query, as: [CodexThreadRow].self).first
     }
 
-    /// Loads recent Codex response websocket events for a thread.
+    /// Loads recent local response websocket events for a thread.
     nonisolated static func responseEvents(
         for threadId: String,
         from databasePath: String,
@@ -176,7 +176,7 @@ extension CodexLogObserver {
         return try CodexDatabase.runJSON(databasePath: databasePath, query: query, as: [CodexResponseEventRow].self)
     }
 
-    /// Loads the newest Codex response event id from the feedback log database.
+    /// Loads the newest local response event id from the feedback log database.
     nonisolated static func latestResponseLogId(from databasePath: String) throws -> Int? {
         let query = """
         SELECT id

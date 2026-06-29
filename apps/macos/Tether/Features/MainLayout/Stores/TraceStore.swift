@@ -5,7 +5,7 @@ import SwiftUI
 import UI
 
 /// Main-actor state owner for the trace graph. It polls the single live trace
-/// stream and combines proxy captures with local Codex observations.
+/// stream and combines proxy captures with local agent observations.
 @MainActor
 final class TraceStore: ObservableObject {
     /// Calls captured in the current live trace stream.
@@ -27,7 +27,7 @@ final class TraceStore: ObservableObject {
     var lastWorkspaceSnapshot: WorkspaceSnapshot?
     var pendingAttributionNodeIds: [AgentNode.ID] = []
 
-    /// Creates a store backed by the local proxy client and Codex log observer.
+    /// Creates a store backed by the local proxy client and local log observer.
     init(
         client: TraceAPIClient? = nil,
         codexObserver: CodexLogObserver = CodexLogObserver()
@@ -83,7 +83,7 @@ final class TraceStore: ObservableObject {
         pollingTask = nil
     }
 
-    /// Refreshes the combined live proxy + Codex stream.
+    /// Refreshes the combined live proxy and local agent stream.
     func refresh() async {
         guard !graphInteractionActive else {
             refreshAfterInteraction = true
@@ -93,7 +93,7 @@ final class TraceStore: ObservableObject {
         await refreshLive()
     }
 
-    /// Polls the live view, combining the proxy trace stream with local Codex events.
+    /// Polls the live view, combining the proxy trace stream with local agent events.
     private func refreshLive() async {
         async let codexResult = loadCodexSnapshot()
         let proxyResult = await loadProxySnapshot()
@@ -124,7 +124,7 @@ final class TraceStore: ObservableObject {
 
         if let codexSnapshot, !codexSnapshot.nodes.isEmpty {
             apply(snapshot: codexSnapshot)
-            proxyStatus = .observingCodex("Watching Terminal Codex automatically")
+            proxyStatus = .observingCodex("Watching local agent activity automatically")
             return
         }
 
@@ -136,11 +136,11 @@ final class TraceStore: ObservableObject {
 
         if let codexSnapshot {
             apply(snapshot: codexSnapshot)
-            proxyStatus = .observingCodex("Open Terminal and run codex")
+            proxyStatus = .observingCodex("Open Terminal and run an agent command")
             return
         }
 
-        proxyStatus = .offline(proxyError?.localizedDescription ?? "Start the proxy or run codex in Terminal")
+        proxyStatus = .offline(proxyError?.localizedDescription ?? "Start the proxy or run an agent command in Terminal")
     }
 
     /// Applies a snapshot to the currently visible graph.

@@ -75,7 +75,7 @@ export const SITE_PAGES: SitePage[] = [
         title: "Execution capture",
         body:
           "Use tether capture -- <agent command>, source adapters, or OpenAI-compatible proxying to see prompts, tool calls, commands, tests, and file changes in a structured graph.",
-        bullets: ["Codex and Claude Code sources", "LangChain and LangGraph adapters", "Command output and exit status", "File diff and line counts"],
+        bullets: ["Agent CLI sources", "LangChain and LangGraph adapters", "Command output and exit status", "File diff and line counts"],
       },
       {
         title: "Recovery actions",
@@ -143,7 +143,7 @@ export const SITE_PAGES: SitePage[] = [
         title: "Use it with your existing stack",
         body:
           "Keep your agents, SDKs, models, and frameworks. Tether connects through adapters and normalized event ingestion.",
-        bullets: ["Codex", "Claude Code", "LangChain", "LangGraph", "OpenAI/OpenGPT-style agents", "Custom CLI agents"],
+        bullets: ["Agent CLIs", "Framework agents", "LangChain", "LangGraph", "OpenAI/OpenGPT-style agents", "Custom CLI agents"],
       },
       {
         title: "Debug before production",

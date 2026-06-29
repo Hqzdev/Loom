@@ -38,12 +38,12 @@ export const metadata: Metadata = {
     template: "%s | Tether",
   },
   description:
-    "Debug AI coding agent execution locally: prompt, action, file diff, failed command or test, and recovery. Source adapters for Codex, Claude Code, LangChain, LangGraph, OpenAI/OpenGPT-style agents, and custom CLIs.",
+    "Debug AI coding agent execution locally: prompt, action, file diff, failed command or test, and recovery. Source adapters for supported agent CLIs, LangChain, LangGraph, OpenAI/OpenGPT-style agents, and custom CLIs.",
   keywords: [
     "AI coding agent debugger",
     "execution debugger",
     "local AI proxy",
-    "Codex debugger",
+    "AI agent debugger",
     "Claude Code debugger",
     "agent tracing tool",
     "agent execution graph",

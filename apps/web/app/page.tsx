@@ -106,7 +106,7 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
   },
   {
     q: "How does Tether capture agent runs?",
-    a: "Use tether capture -- <agent command> or route OpenAI-compatible traffic through the local proxy. Source adapters normalize Codex, Claude Code, LangChain, LangGraph, OpenAI/OpenGPT-style agents, and custom CLI events into one execution graph.",
+    a: "Use tether capture -- <agent command> or route OpenAI-compatible traffic through the local proxy. Source adapters normalize supported agent CLIs, LangChain, LangGraph, OpenAI/OpenGPT-style agents, and custom CLI events into one execution graph.",
   },
   {
     q: "Can I use this with production code?",
@@ -797,7 +797,7 @@ export default function TetherLanding() {
             <div className="num">01 / CAPTURE</div>
             <h4>Wrap the agent command</h4>
             <p>
-              Use tether capture -- with Codex, Claude Code, custom CLIs, or an adapter-backed framework run.
+              Use tether capture -- with supported agent CLIs, custom CLIs, or an adapter-backed framework run.
             </p>
           </div>
           <div className="step reveal">

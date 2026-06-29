@@ -144,7 +144,7 @@ struct MainThreePaneLayoutView: View {
 
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This permanently deletes every stored trace and hides existing Terminal Codex events until new activity arrives. This cannot be undone.")
+            Text("This permanently deletes every stored trace and hides existing local agent events until new activity arrives. This cannot be undone.")
         }
         .sheet(isPresented: $showingConnectionHelp) {
             ConnectionHelpSheet()

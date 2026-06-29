@@ -32,8 +32,8 @@ struct AgentSettingsView: View {
                 palette: palette
             )
             SettingsToggleRow(
-                "Terminal Codex",
-                subtitle: "Show locally observed Codex CLI runs.",
+                "Local agent runs",
+                subtitle: "Show locally observed agent CLI runs.",
                 isOn: $preferences.captureCodex,
                 palette: palette
             )

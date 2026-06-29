@@ -3,10 +3,10 @@ import Foundation
 
 /// A single request, response, tool call, or replay step shown in the trace graph.
 public struct AgentNode: Identifiable, Hashable, Codable, Sendable {
-    /// Stable node identifier from the proxy or local Codex observer.
+    /// Stable node identifier from the proxy or local agent observer.
     public let id: String
 
-    /// Human-readable agent name, such as Codex or Claude Code.
+    /// Human-readable agent name, such as a terminal agent or framework agent.
     public let agentName: String
 
     /// Vertical graph depth assigned by the snapshot builder.
@@ -177,7 +177,7 @@ public struct AgentNode: Identifiable, Hashable, Codable, Sendable {
         let cacheStatus = cacheStatus.lowercased()
 
         if cacheStatus == "codex-log" || stepName.contains("codex") {
-            return "Codex"
+            return "Local Agent"
         }
 
         if model.contains("claude") || stepName.contains("anthropic") {
@@ -185,7 +185,7 @@ public struct AgentNode: Identifiable, Hashable, Codable, Sendable {
         }
 
         if stepName.contains("openai") {
-            return "Codex"
+            return "OpenAI Agent"
         }
 
         return "Agent"

@@ -83,7 +83,7 @@ final class AppPreferences: ObservableObject {
         didSet { store.set(codexIntegrationEnabled, forKey: Key.codexIntegrationEnabled) }
     }
 
-    /// Optional custom path to the Codex log/database location.
+    /// Optional custom path to the local log/database location.
     @Published var codexLogPath: String {
         didSet { store.set(codexLogPath, forKey: Key.codexLogPath) }
     }

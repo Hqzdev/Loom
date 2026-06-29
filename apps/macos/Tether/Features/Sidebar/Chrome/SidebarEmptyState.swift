@@ -11,7 +11,7 @@ struct SidebarEmptyState: View {
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundStyle(palette.textTertiary)
 
-            Text("Run codex in Terminal or send traffic through the proxy.")
+            Text("Run an agent command or send traffic through the proxy.")
                 .font(.system(size: 11.5))
                 .foregroundStyle(palette.textQuaternary)
                 .multilineTextAlignment(.center)

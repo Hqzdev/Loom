@@ -22,7 +22,7 @@ extension CodexLogObserver {
                     id: event.responseId ?? "codex-\(event.id)",
                     startedAt: event.responseCreatedAt ?? event.ts,
                     completedAt: nil,
-                    model: event.model ?? thread.model ?? "codex",
+                    model: event.model ?? thread.model ?? "agent",
                     status: .running,
                     tokensIn: 0,
                     tokensOut: 0,
@@ -77,9 +77,9 @@ extension CodexLogObserver {
 
         return AgentNode(
             id: draft.id,
-            agentName: "Codex",
+            agentName: "Local Agent",
             depth: index,
-            stepName: draft.status == .running ? "Codex response streaming" : responseTitle,
+            stepName: draft.status == .running ? "Agent response streaming" : responseTitle,
             timestamp: formatClock(seconds: draft.startedAt),
             model: draft.model,
             cost: "$0.0000",
@@ -94,7 +94,7 @@ extension CodexLogObserver {
             traceId: thread.id,
             status: draft.status,
             prompt: AgentPrompt(
-                system: "Observed from ~/.codex local logs. No proxy configuration is required for Terminal Codex runs.",
+                system: "Observed from local agent logs. No proxy configuration is required for supported terminal runs.",
                 user: promptUser?.isEmpty == false ? promptUser ?? "" : "No turn request was recorded for this local log event."
             ),
             response: AgentResponse(language: .text, text: responseText),

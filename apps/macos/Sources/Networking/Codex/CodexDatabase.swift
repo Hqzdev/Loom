@@ -1,18 +1,18 @@
 import Foundation
 
-/// Locates and queries the local Codex SQLite databases.
+/// Locates and queries the local agent SQLite databases.
 enum CodexDatabase {
-    /// Path to the local Codex state database.
+    /// Path to the local agent state database.
     static var statePath: String {
         codexDirectory.appendingPathComponent("state_5.sqlite").path
     }
 
-    /// Path to the local Codex feedback log database.
+    /// Path to the local agent feedback log database.
     static var logsPath: String {
         codexDirectory.appendingPathComponent("logs_2.sqlite").path
     }
 
-    /// Whether both local Codex databases exist.
+    /// Whether both local agent databases exist.
     static var allDatabasesExist: Bool {
         withCodexAccess {
             FileManager.default.fileExists(atPath: statePath)

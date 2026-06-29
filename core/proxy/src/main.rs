@@ -131,7 +131,7 @@ async fn main() {
     let cache_label = if cache_enabled { "on" } else { "off" };
     println!("{BOLD}{CYAN}◆ Tether proxy{RESET} listening on {BOLD}http://{addr}{RESET}");
     println!("  {DIM}/v1/messages*   -> {anthropic}   (Anthropic / Claude Code){RESET}");
-    println!("  {DIM}everything else -> {openai}   (OpenAI / Codex){RESET}");
+    println!("  {DIM}everything else -> {openai}   (OpenAI-compatible agents){RESET}");
     println!("  {DIM}cache: {BOLD}{cache_label}{RESET}{DIM}  ·  db: {db_path}{RESET}");
     println!(
         "  {DIM}trace retention: {BOLD}{}{RESET}",

@@ -3,7 +3,7 @@ import Foundation
 import Networking
 
 extension TraceStore {
-    /// Clears every proxy trace and hides already-observed Codex events.
+    /// Clears every proxy trace and hides already-observed local agent events.
     func clearTrace() {
         Task {
             await clearAllTraces()
@@ -26,7 +26,7 @@ extension TraceStore {
         }
     }
 
-    /// Loads the local Codex snapshot without failing the proxy refresh path.
+    /// Loads the local agent snapshot without failing the proxy refresh path.
     func loadCodexSnapshot() async -> Result<TraceSnapshot?, Error> {
         do {
             return .success(try await codexObserver.currentSnapshot(afterLogId: codexBaselineLogId))
@@ -40,7 +40,7 @@ extension TraceStore {
         try await CometAPIClient.replayWithModel(traceId: node.id, model: model)
     }
 
-    /// Clears proxy traces and hides previously observed Codex events until new
+    /// Clears proxy traces and hides previously observed local agent events until new
     /// activity arrives.
     func clearAllTraces() async {
         codexBaselineLogId = try? await codexObserver.latestResponseEventId()
@@ -52,7 +52,7 @@ extension TraceStore {
             proxyStatus = .online
             await refresh()
         } catch {
-            proxyStatus = .observingCodex("Open Terminal and run codex")
+            proxyStatus = .observingCodex("Open Terminal and run an agent command")
         }
     }
 }

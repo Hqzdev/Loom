@@ -94,7 +94,7 @@ export const DOCS_PAGES: DocsPage[] = [
           {
             kind: "list",
             items: [
-              "Capture Codex, Claude Code, LangChain, LangGraph, OpenAI/OpenGPT-style, and custom CLI runs through adapters or proxy ingestion.",
+              "Capture supported agent CLIs, LangChain, LangGraph, OpenAI/OpenGPT-style, and custom local runs through adapters or proxy ingestion.",
               "Inspect prompt, action, command output, file changes, latency, tokens, cost, cache state, and errors.",
               "Replay supported proxy-captured requests or use local rollback evidence when replay is unavailable.",
               "Keep API keys and trace data on the local machine through platform-local storage paths.",
@@ -125,7 +125,7 @@ export const DOCS_PAGES: DocsPage[] = [
               },
               {
                 title: "macOS app",
-                text: "Swift package modules, graph panes, inspector panes, settings, and Codex log ingestion.",
+                text: "Swift package modules, graph panes, inspector panes, settings, and local source ingestion.",
                 href: "/docs/architecture-app",
               },
               {
@@ -450,7 +450,7 @@ export const DOCS_PAGES: DocsPage[] = [
     title: "Supported agents and frameworks",
     category: "Supported agents and frameworks",
     description:
-      "Connect Codex, Claude Code, LangChain, LangGraph, OpenAI/OpenGPT-style agents, and custom CLI agents to Tether through source adapters and normalized event ingestion.",
+      "Connect supported agent CLIs, LangChain, LangGraph, OpenAI/OpenGPT-style agents, and custom CLI agents to Tether through source adapters and normalized event ingestion.",
     sections: [
       {
         title: "Source model",
@@ -475,12 +475,12 @@ export const DOCS_PAGES: DocsPage[] = [
             kind: "table",
             headers: ["Source", "How it connects"],
             rows: [
-              ["Codex", "Local Codex logs are read from the user's .codex databases when the Codex source adapter is enabled."],
-              ["Claude Code and local agent logs", "Local logs can be ingested by a source adapter and normalized into execution events."],
+              ["Local agent logs", "Supported local logs can be ingested by a source adapter and normalized into execution events."],
+              ["Agent CLIs", "Run tether capture -- <agent command> so the wrapper can collect process, shell, file, and proxy events."],
               ["LangChain", "Use callbacks for tool and chain events, or route OpenAI-compatible model traffic through the local proxy."],
               ["LangGraph", "Use graph callbacks for node transitions, or proxy model traffic through Tether when the model client supports base_url."],
               ["OpenAI/OpenGPT-style agents", "Point OpenAI-compatible base_url traffic at the local Tether proxy."],
-              ["Custom CLI agents", "Run tether capture -- <agent command> so the wrapper can collect process, shell, file, and proxy events."],
+              ["Custom CLI agents", "Connect custom local workflows through the capture wrapper or a source adapter."],
             ],
           },
         ],
@@ -534,7 +534,7 @@ export const DOCS_PAGES: DocsPage[] = [
             kind: "table",
             headers: ["Area", "Focus", "Outcome"],
             rows: [
-              ["Execution capture", "Codex logs, proxy-captured requests, local trace storage, and normalized graph nodes.", "A developer can see the prompt, model request, response, metadata, and source context for a local agent run."],
+              ["Execution capture", "Local source logs, proxy-captured requests, local trace storage, and normalized graph nodes.", "A developer can see the prompt, model request, response, metadata, and source context for a local agent run."],
               ["Desktop debuggers", "macOS and Linux clients with graph selection, inspector panes, settings, local proxy control, and source-log ingestion.", "The desktop apps are the primary local debugging surfaces."],
               ["Recovery evidence", "Replay for supported proxy-captured requests and rollback context for file-changing nodes.", "A failed branch has enough evidence for targeted recovery instead of blind reruns."],
               ["Public docs", "Architecture, supported agents, commands, privacy, release workflow, and API reference.", "The site explains the real product shape instead of presenting Tether as a generic observability tool."],
@@ -552,7 +552,7 @@ export const DOCS_PAGES: DocsPage[] = [
               ["Capture wrapper", "Harden tether capture -- <agent command> across local coding-agent workflows.", "The wrapper is the cleanest path to full prompt, process, shell, file, and test attribution."],
               ["Failure-first graph", "Make failed commands, failed tests, changed files, and stale downstream branches easier to scan.", "The graph should answer where the run broke before it asks users to inspect every node."],
               ["Replay boundaries", "Make replay availability explicit per source, request type, and provider route.", "A debugger loses trust if it shows controls that cannot actually recover the selected node."],
-              ["Adapter coverage", "Deepen Codex, Claude Code, LangChain, LangGraph, OpenAI-compatible, and custom CLI ingestion.", "Tether should follow the agent stack developers already use instead of forcing a new runtime."],
+              ["Adapter coverage", "Deepen supported CLI, framework, OpenAI-compatible, and custom source ingestion.", "Tether should follow the agent stack developers already use instead of forcing a new runtime."],
             ],
           },
         ],
@@ -744,7 +744,7 @@ export const DOCS_PAGES: DocsPage[] = [
             headers: ["Module", "Responsibility"],
             rows: [
               ["Core", "Trace models, session reducer state, and dependency contracts."],
-              ["Networking", "Trace API client, proxy settings, Keychain storage, launcher, and Codex log observer."],
+              ["Networking", "Trace API client, proxy settings, Keychain storage, launcher, and local log observers."],
               ["UI", "Shared visual components, palette tokens, dividers, badges, and glass surfaces."],
             ],
           },

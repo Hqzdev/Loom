@@ -268,7 +268,7 @@ function Sidebar({ t }) {
           <span style={{ fontFamily: MONO, fontSize: 11, color: C.textMid }}>0.61s</span>
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-          <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.violet, background: "rgba(109,94,240,0.1)", padding: "2px 7px", borderRadius: 5 }}>⌘ Codex</span>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.violet, background: "rgba(109,94,240,0.1)", padding: "2px 7px", borderRadius: 5 }}>⌘ Agent</span>
           <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.textMid, background: C.bgSubtle, padding: "2px 7px", borderRadius: 5 }}>openai / gpt-4o</span>
         </div>
       </div>
@@ -356,7 +356,7 @@ function DetailPanel({ t }) {
         }}>{repaired ? "FIXED" : "ERROR"}</span>
       </div>
       <div style={{ display: "flex", gap: 7, marginTop: 11 }}>
-        <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.violet, background: "rgba(109,94,240,0.1)", padding: "3px 8px", borderRadius: 6 }}>⌘ Codex</span>
+        <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.violet, background: "rgba(109,94,240,0.1)", padding: "3px 8px", borderRadius: 6 }}>⌘ Agent</span>
         <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.textMid, background: "#ffffff", border: `1px solid ${C.border}`, padding: "3px 8px", borderRadius: 6 }}>openai / gpt-4o</span>
       </div>
       {/* tabs */}

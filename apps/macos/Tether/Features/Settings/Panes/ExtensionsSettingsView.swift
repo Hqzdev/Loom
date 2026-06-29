@@ -17,6 +17,10 @@ struct ExtensionsSettingsView: View {
         FileManager.default.fileExists(atPath: codexDirectory.appendingPathComponent("logs_2.sqlite").path)
     }
 
+    private var localLogDirectoryLabel: String {
+        access.hasCodexAccess ? "Access granted to a local log folder" : "Grant access to a supported local log folder"
+    }
+
     var body: some View {
         SettingsPaneScaffold(
             title: "Extensions",
@@ -35,24 +39,24 @@ struct ExtensionsSettingsView: View {
     }
 
     private var codexSection: some View {
-        SettingsSection("Terminal Codex", palette: palette) {
+        SettingsSection("Local agent source", palette: palette) {
             SettingsToggleRow(
-                "Enable Codex source adapter",
-                subtitle: "Observe Codex CLI runs from local databases.",
+                "Enable local source adapter",
+                subtitle: "Observe supported agent CLI runs from local databases.",
                 isOn: $preferences.codexIntegrationEnabled,
                 palette: palette
             )
 
             SettingsValueRow(
                 "Local databases",
-                subtitle: codexDirectory.path,
+                subtitle: localLogDirectoryLabel,
                 value: access.hasCodexAccess ? (codexLogsDetected ? "Granted" : "Missing DB") : "Not granted",
                 palette: palette
             )
 
             SettingsButtonRow(
-                "Codex local log access",
-                subtitle: "Grant once so this source adapter can read Terminal Codex logs.",
+                "Local log access",
+                subtitle: "Grant once so this source adapter can read local agent logs.",
                 buttonTitle: access.hasCodexAccess ? "Change Folder" : "Grant Access",
                 systemImage: "folder.badge.gearshape",
                 palette: palette
@@ -62,7 +66,7 @@ struct ExtensionsSettingsView: View {
 
             if access.hasCodexAccess {
                 SettingsButtonRow(
-                    "Forget Codex access",
+                    "Forget local log access",
                     subtitle: "Remove the saved permission and stop reading this source.",
                     buttonTitle: "Forget",
                     systemImage: "xmark.circle",

@@ -17,7 +17,7 @@ enum ProxyConnectionStatus: Equatable {
         case .online:
             return "Local Proxy"
         case .observingCodex:
-            return "Codex Observer"
+            return "Agent Observer"
         case .observingAgents:
             return "Two Agents"
         case .offline:

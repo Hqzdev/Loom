@@ -17,7 +17,7 @@ struct ConnectionHelpSheet: View {
             VStack(alignment: .leading, spacing: 24) {
                 ConnectionHelpHeader(palette: palette)
                 VStack(alignment: .leading, spacing: 12) {
-                    HelpRow(systemImage: "1.circle", title: "Open Terminal", detail: "Run codex from any terminal session.", palette: palette)
+                    HelpRow(systemImage: "1.circle", title: "Open Terminal", detail: "Run any supported agent command from a terminal session.", palette: palette)
                     HelpRow(systemImage: "2.circle", title: "Keep Tether Open", detail: "The workspace updates as new agent calls arrive.", palette: palette)
                     HelpRow(systemImage: "3.circle", title: "Use Proxy Settings", detail: "Configure port, upstream URLs, and cache from Settings.", palette: palette)
                 }

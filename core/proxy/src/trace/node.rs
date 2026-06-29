@@ -83,7 +83,7 @@ fn agent_name_for(provider: &str, model: &str) -> String {
     } else if provider == "anthropic" || model.contains("claude") {
         "Claude Code".to_string()
     } else if provider == "openai" {
-        "Codex".to_string()
+        "OpenAI Agent".to_string()
     } else {
         "Agent".to_string()
     }

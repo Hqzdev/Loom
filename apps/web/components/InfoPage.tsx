@@ -31,7 +31,7 @@ const PAGE_SIGNALS: Record<string, PageSignal[]> = {
     { label: "3", value: "Recover", detail: "debug from concrete evidence" },
   ],
   developers: [
-    { label: "Sources", value: "Adapters", detail: "Codex, Claude, LangChain" },
+    { label: "Sources", value: "Adapters", detail: "CLIs, frameworks, proxy" },
     { label: "Boundary", value: "Local", detail: "no hosted workspace required" },
     { label: "Loop", value: "Fast", detail: "debug before production" },
   ],
